@@ -20,6 +20,10 @@
     </p>
   </description>
 
+  <developer id="io.github.moriyama_dev">
+    <name>Yoshiro Moriyama</name>
+  </developer>
+
   <url type="homepage">https://github.com/moriyama-dev/masame</url>
   <url type="bugtracker">https://github.com/moriyama-dev/masame/issues</url>
 

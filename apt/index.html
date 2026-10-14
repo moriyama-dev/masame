@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Masame APT repository</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.7; color: #222; background: #fbf8f2; }
+  pre { background: #fff; border: 1px solid #ddd3c0; padding: 0.8rem; overflow-x: auto; }
+  code { font-size: 0.9em; }
+  h1 { font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>Masame APT repository</h1>
+
+<p>Masame（柾目）の apt リポジトリです。Linux x64（amd64）向けで、Ubuntu 24.04 以降に対応しています。<br>
+This is the apt repository of Masame for Linux x64 (amd64), Ubuntu 24.04 or later.</p>
+
+<h2>使い方 / Usage</h2>
+<pre><code>sudo install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://moriyama-dev.github.io/masame/masame-archive-keyring.gpg | sudo tee /etc/apt/keyrings/masame-archive-keyring.gpg &gt; /dev/null
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/masame-archive-keyring.gpg] https://moriyama-dev.github.io/masame stable main" | sudo tee /etc/apt/sources.list.d/masame.list &gt; /dev/null
+sudo apt update
+sudo apt install masame</code></pre>
+
+<p>署名鍵のフィンガープリント / Signing key fingerprint:<br>
+<code>B2CA 3B56 3542 D803 AAD7  6183 69E7 B5CA CDC8 0F7E</code></p>
+
+<p><a href="https://github.com/moriyama-dev/masame">github.com/moriyama-dev/masame</a></p>
+</body>
+</html>

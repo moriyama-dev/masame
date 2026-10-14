@@ -313,7 +313,7 @@ function StatusView:register_command_items()
         style.icon_font, "g",
         style.font, style.dim, self.separator2,
         style.text, #core.docs, style.text, " / ",
-        #core.project_files, " files"
+        #core.project_files, i18n.t(" files")
       }
     end
   })

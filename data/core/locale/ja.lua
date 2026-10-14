@@ -114,6 +114,7 @@ return {
   ["tabs: "] = "タブ: ",
   ["spaces: "] = "スペース: ",
   [" lines"] = " 行",
+  [" files"] = " ファイル",
   ["line : column"] = "行 : 列",
 
   -- Prompts

@@ -30,7 +30,7 @@ config.always_show_tabs = true
 -- Possible values: false, true, "no_selection"
 config.highlight_current_line = true
 config.line_height = 1.2
-config.indent_size = 2
+config.indent_size = 4
 config.tab_type = "soft"
 config.keep_newline_whitespace = false
 config.line_limit = 80
