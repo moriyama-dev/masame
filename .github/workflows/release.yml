@@ -91,6 +91,7 @@ jobs:
           msystem: MINGW64
           update: true
           install: >-
+            git
             zip
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-meson
