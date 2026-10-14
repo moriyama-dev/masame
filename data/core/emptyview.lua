@@ -1,4 +1,5 @@
 local style = require "core.style"
+local i18n = require "core.i18n"
 local keymap = require "core.keymap"
 local View = require "core.view"
 
@@ -9,7 +10,7 @@ local EmptyView = View:extend()
 function EmptyView:__tostring() return "EmptyView" end
 
 function EmptyView:get_name()
-  return "Get Started"
+  return i18n.t("Get Started")
 end
 
 function EmptyView:get_filename()
@@ -27,7 +28,7 @@ local function draw_text(x, y, color)
   local x1, y1 = x, y + ((dh - th) / #lines)
   local xv = x1
   local title = "Masame"
-  local version = "version " .. VERSION
+  local version = i18n.t("version ") .. VERSION
   local title_width = style.big_font:get_width(title)
   local version_width = style.font:get_width(version)
   if version_width > title_width then
@@ -43,7 +44,7 @@ local function draw_text(x, y, color)
   y = y + (dh - (th + style.padding.y) * #lines) / 2
   local w = 0
   for _, line in ipairs(lines) do
-    local text = string.format(line.fmt, keymap.get_binding(line.cmd))
+    local text = string.format(i18n.t(line.fmt), keymap.get_binding(line.cmd))
     w = math.max(w, renderer.draw_text(style.font, text, x + style.padding.x, y, color))
     y = y + th + style.padding.y
   end

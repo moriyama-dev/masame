@@ -170,6 +170,86 @@ static void push_win32_error(lua_State *L, DWORD rc) {
 }
 #endif
 
+
+/* Native file dialogs. The result arrives later as a "dialogfinished" event
+   carrying the request id and the chosen paths (or nil and an error). */
+static Uint32 dialog_event_type = 0;
+static int dialog_next_id = 1;
+
+typedef struct {
+  int id;
+  int count;     /* -1 on error */
+  char **paths;
+  char *error;
+} DialogResult;
+
+static void SDLCALL dialog_callback(void *userdata, const char * const *filelist, int filter) {
+  (void) filter;
+  DialogResult *r = SDL_calloc(1, sizeof(DialogResult));
+  if (!r) return;
+  r->id = (int)(intptr_t) userdata;
+  if (!filelist) {
+    r->count = -1;
+    r->error = SDL_strdup(SDL_GetError());
+  } else {
+    int n = 0;
+    while (filelist[n]) n++;
+    r->count = n;
+    r->paths = SDL_calloc(n > 0 ? n : 1, sizeof(char*));
+    for (int i = 0; i < n; i++)
+      r->paths[i] = SDL_strdup(filelist[i]);
+  }
+  SDL_Event ev;
+  SDL_zero(ev);
+  ev.type = dialog_event_type;
+  ev.user.data1 = r;
+  SDL_PushEvent(&ev);
+}
+
+static int push_dialog_event(lua_State *L, DialogResult *r) {
+  lua_pushstring(L, "dialogfinished");
+  lua_pushinteger(L, r->id);
+  if (r->count < 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, r->error ? r->error : "unknown error");
+  } else {
+    lua_createtable(L, r->count, 0);
+    for (int i = 0; i < r->count; i++) {
+      lua_pushstring(L, r->paths[i]);
+      lua_rawseti(L, -2, i + 1);
+      SDL_free(r->paths[i]);
+    }
+    lua_pushnil(L);
+  }
+  SDL_free(r->paths);
+  SDL_free(r->error);
+  SDL_free(r);
+  return 4;
+}
+
+/* system.show_file_dialog(kind, default_location?, allow_many?) -> id
+   kind is "openfile", "openfolder" or "savefile". */
+static int f_show_file_dialog(lua_State *L) {
+  static const char *kinds[] = { "openfile", "openfolder", "savefile", NULL };
+  int kind = luaL_checkoption(L, 1, NULL, kinds);
+  const char *location = luaL_optstring(L, 2, NULL);
+  bool allow_many = lua_toboolean(L, 3);
+  if (!dialog_event_type) {
+    dialog_event_type = SDL_RegisterEvents(1);
+    if (!dialog_event_type) return luaL_error(L, "cannot register dialog event");
+  }
+  int id = dialog_next_id++;
+  void *userdata = (void*)(intptr_t) id;
+  SDL_Window *window = window_renderer.window;
+  switch (kind) {
+    case 0: SDL_ShowOpenFileDialog(dialog_callback, userdata, window, NULL, 0, location, allow_many); break;
+    case 1: SDL_ShowOpenFolderDialog(dialog_callback, userdata, window, location, allow_many); break;
+    case 2: SDL_ShowSaveFileDialog(dialog_callback, userdata, window, NULL, 0, location); break;
+  }
+  lua_pushinteger(L, id);
+  return 1;
+}
+
 static int f_poll_event(lua_State *L) {
   char buf[16];
   float mx, my;
@@ -180,6 +260,10 @@ static int f_poll_event(lua_State *L) {
 top:
   if ( !SDL_PollEvent(&e) ) {
     return 0;
+  }
+
+  if (dialog_event_type && e.type == dialog_event_type) {
+    return push_dialog_event(L, (DialogResult*) e.user.data1);
   }
 
   switch (e.type) {
@@ -1112,6 +1196,7 @@ static const luaL_Reg lib[] = {
   { "load_native_plugin",  f_load_native_plugin  },
   { "path_compare",        f_path_compare        },
   { "get_fs_type",         f_get_fs_type         },
+  { "show_file_dialog",    f_show_file_dialog    },
   { NULL, NULL }
 };
 

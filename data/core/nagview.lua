@@ -4,6 +4,7 @@ local common = require "core.common"
 local config = require "core.config"
 local View = require "core.view"
 local style = require "core.style"
+local i18n = require "core.i18n"
 
 local BORDER_WIDTH = common.round(1 * SCALE)
 local UNDERLINE_WIDTH = common.round(2 * SCALE)
@@ -93,7 +94,7 @@ function NagView:each_option()
 
     for i = #self.options, 1, -1 do
       opt = self.options[i]
-      bw = style.font:get_width(opt.text) + 2 * BORDER_WIDTH + style.padding.x
+      bw = style.font:get_width(i18n.t(opt.text)) + 2 * BORDER_WIDTH + style.padding.x
 
       ox = ox - bw - style.padding.x
       coroutine.yield(i, opt, ox,oy,bw,bh)
@@ -232,7 +233,7 @@ local function draw_nagview_message(self)
       renderer.draw_rect(lx,ly,uw,UNDERLINE_WIDTH, style.nagbar_text)
     end
 
-    common.draw_text(style.font, style.nagbar_text, opt.text, "center", fx,fy,fw,fh)
+    common.draw_text(style.font, style.nagbar_text, i18n.t(opt.text), "center", fx,fy,fw,fh)
   end
 
   self:draw_scrollbar()
@@ -269,8 +270,8 @@ function NagView:next()
   local opts = table.remove(self.queue, 1) or {}
   if opts.title and opts.message and opts.options then
     self.visible = true
-    self.title = opts.title
-    self.message = opts.message and opts.message .. "\n"
+    self.title = i18n.t(opts.title)
+    self.message = opts.message and i18n.t(opts.message) .. "\n"
     self.options = opts.options
     self.on_selected = opts.on_selected
 

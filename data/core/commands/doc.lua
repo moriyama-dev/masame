@@ -1,4 +1,5 @@
 local core = require "core"
+local i18n = require "core.i18n"
 local command = require "core.command"
 local common = require "core.common"
 local config = require "core.config"
@@ -43,7 +44,7 @@ local function save(filename)
     core.log("Saved \"%s\"", saved_filename)
   else
     core.error(err)
-    core.nag_view:show("Saving failed", string.format("Couldn't save file \"%s\". Do you want to save to another location?", doc().filename), {
+    core.nag_view:show("Saving failed", i18n.f("Couldn't save file \"%s\". Do you want to save to another location?", doc().filename), {
       { text = "Yes", default_yes = true },
       { text = "No", default_no = true }
     }, function(item)

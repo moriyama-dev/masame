@@ -1,5 +1,6 @@
 -- mod-version:3
 local core = require "core"
+local i18n = require "core.i18n"
 local config = require "core.config"
 local Doc = require "core.doc"
 local Node = require "core.node"
@@ -72,7 +73,7 @@ end
 
 local function check_prompt_reload(doc)
   if doc and doc.deferred_reload then
-    core.nag_view:show("File Changed", doc.filename .. " has changed. Reload this file?", {
+    core.nag_view:show("File Changed", i18n.f("%s has changed. Reload this file?", doc.filename), {
       { text = "Yes", default_yes = true },
       { text = "No", default_no = true }
     }, function(item)

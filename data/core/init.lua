@@ -628,6 +628,8 @@ function core.init()
     EXEDIR  = common.normalize_volume(EXEDIR)
   end
 
+  require("core.i18n").load()
+
   do
     local session = load_session()
     if session.window_mode == "normal" then
@@ -687,11 +689,14 @@ function core.init()
   core.nag_view = NagView()
   ---@type core.titleview
   core.title_view = TitleView()
+  core.menu_bar = require("core.menubar")()
 
   -- Some plugins (eg: console) require the nodes to be initialized to defaults
   local cur_node = core.root_view.root_node
   cur_node.is_primary_node = true
   cur_node:split("up", core.title_view, {y = true})
+  cur_node = cur_node.b
+  cur_node:split("up", core.menu_bar, {y = true})
   cur_node = cur_node.b
   cur_node:split("up", core.nag_view, {y = true})
   cur_node = cur_node.b
@@ -700,6 +705,7 @@ function core.init()
 
   -- Load defaiult commands first so plugins can override them
   command.add_defaults()
+  require "core.menus"
 
   -- Load user module, plugins and project module
   local got_user_error = not core.load_user_directory()
@@ -742,7 +748,7 @@ function core.init()
 
   do
     local pdir, pname = project_dir_abs:match("(.*)[/\\\\](.*)")
-    core.log("Opening folder %q in %s", pname, pdir)
+    core.log_quiet("Opening folder %q in %s", pname, pdir)
   end
 
   -- We add the project directory now because the project's module is loaded.
@@ -806,9 +812,9 @@ function core.confirm_close_docs(docs, close_fn, ...)
   if dirty_count > 0 then
     local text
     if dirty_count == 1 then
-      text = string.format("\"%s\" has unsaved changes. Quit anyway?", dirty_name)
+      text = require("core.i18n").f("\"%s\" has unsaved changes. Quit anyway?", dirty_name)
     else
-      text = string.format("%d docs have unsaved changes. Quit anyway?", dirty_count)
+      text = require("core.i18n").f("%d docs have unsaved changes. Quit anyway?", dirty_count)
     end
     local args = {...}
     local opt = {
@@ -1106,7 +1112,7 @@ end
 
 
 function core.custom_log(level, show, backtrace, fmt, ...)
-  local text = string.format(fmt, ...)
+  local text = string.format(require("core.i18n").t(fmt), ...)
   if show then
     local s = style.log[level]
     if core.status_view then
@@ -1181,7 +1187,9 @@ end
 
 function core.on_event(type, ...)
   local did_keymap = false
-  if type == "textinput" then
+  if type == "dialogfinished" then
+    require("core.filedialog").on_finished(...)
+  elseif type == "textinput" then
     core.root_view:on_text_input(...)
   elseif type == "textediting" then
     ime.on_text_editing(...)

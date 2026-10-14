@@ -74,22 +74,29 @@ end
 function DocView:try_close(do_close)
   if self.doc:is_dirty()
   and #core.get_views_referencing_doc(self.doc) == 1 then
-    core.command_view:enter("Unsaved Changes; Confirm Close", {
-      submit = function(_, item)
-        if item.text:match("^[cC]") then
-          do_close()
-        elseif item.text:match("^[sS]") then
-          self.doc:save()
+    local i18n = require "core.i18n"
+    core.nag_view:show(
+      "Unsaved Changes",
+      i18n.f("Save changes to \"%s\" before closing?", self.doc:get_name()),
+      {
+        { text = "Save", id = "save", default_yes = true },
+        { text = "Don't Save", id = "discard" },
+        { text = "Cancel", id = "cancel", default_no = true },
+      },
+      function(item)
+        if item.id == "save" then
+          if self.doc.filename then
+            self.doc:save()
+            do_close()
+          else
+            core.set_active_view(self)
+            require("core.command").perform("doc:save-as")
+          end
+        elseif item.id == "discard" then
           do_close()
         end
-      end,
-      suggest = function(text)
-        local items = {}
-        if not text:find("^[^cC]") then table.insert(items, "Close Without Saving") end
-        if not text:find("^[^sS]") then table.insert(items, "Save And Close") end
-        return items
       end
-    })
+    )
   else
     do_close()
   end

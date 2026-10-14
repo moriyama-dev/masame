@@ -1,4 +1,5 @@
 local core = require "core"
+local i18n = require "core.i18n"
 local command = require "core.command"
 local config = require "core.config"
 local search = require "core.doc.search"
@@ -22,11 +23,11 @@ local function get_find_tooltip()
   local rf = keymap.get_binding("find-replace:repeat-find")
   local ti = keymap.get_binding("find-replace:toggle-sensitivity")
   local tr = keymap.get_binding("find-replace:toggle-regex")
-  return (find_regex and "[Regex] " or "") ..
-    (case_sensitive and "[Sensitive] " or "") ..
-    (rf and ("Press " .. rf .. " to select the next match.") or "") ..
-    (ti and (" " .. ti .. " toggles case sensitivity.") or "") ..
-    (tr and (" " .. tr .. " toggles regex find.") or "")
+  return (find_regex and i18n.t("[Regex] ") or "") ..
+    (case_sensitive and i18n.t("[Sensitive] ") or "") ..
+    (rf and i18n.f("Press %s to select the next match.", rf) or "") ..
+    (ti and i18n.f(" %s toggles case sensitivity.", ti) or "") ..
+    (tr and i18n.f(" %s toggles regex find.", tr) or "")
 end
 
 local function update_preview(sel, search_fn, text)
@@ -103,7 +104,7 @@ local function replace(kind, default, fn)
     submit = function(old)
       insert_unique(core.previous_find, old)
 
-      local s = string.format("Replace %s %q With", kind, old)
+      local s = i18n.f("Replace %s %q With", i18n.t(kind), old)
       core.command_view:enter(s, {
         text = old,
         select_text = true,
@@ -118,7 +119,7 @@ local function replace(kind, default, fn)
           for _,v in pairs(results) do
             n = n + v
           end
-          core.log("Replaced %d instance(s) of %s %q with %q", n, kind, old, new)
+          core.log("Replaced %d instance(s) of %s %q with %q", n, i18n.t(kind), old, new)
         end,
         suggest = function() return core.previous_replace end,
         cancel = function()

@@ -4,6 +4,7 @@ local command = require "core.command"
 local config = require "core.config"
 local keymap = require "core.keymap"
 local style = require "core.style"
+local i18n = require "core.i18n"
 local Object = require "core.object"
 local View = require "core.view"
 
@@ -54,7 +55,7 @@ local function get_item_size(item)
     lw = 0
     lh = divider_width + divider_padding * SCALE * 2
   else
-    lw = style.font:get_width(item.text)
+    lw = style.font:get_width(i18n.t(item.text))
     if item.info then
       lw = lw + style.padding.x + style.font:get_width(item.info)
     end
@@ -108,6 +109,7 @@ function ContextMenu:show(x, y)
   end
 
   if #items_list > 0 then
+    update_items_size(items_list)
     self.items = items_list
     local w, h = self.items.width, self.items.height
 
@@ -283,7 +285,7 @@ function ContextMenu:draw_context_menu()
         renderer.draw_rect(x, y, w, h, style.selection)
       end
 
-      common.draw_text(style.font, style.text, item.text, "left", x + style.padding.x, y, w, h)
+      common.draw_text(style.font, style.text, i18n.t(item.text), "left", x + style.padding.x, y, w, h)
       if item.info then
         common.draw_text(style.font, style.dim, item.info, "right", x, y, w - style.padding.x, h)
       end

@@ -1,5 +1,6 @@
 -- mod-version:3
 local core = require "core"
+local i18n = require "core.i18n"
 local common = require "core.common"
 local keymap = require "core.keymap"
 local command = require "core.command"
@@ -330,7 +331,7 @@ end
 
 command.add(nil, {
   ["project-search:find"] = function(path)
-    core.command_view:enter("Find Text In " .. (normalize_path(path) or "Folder"), {
+    core.command_view:enter(i18n.f("Find Text In %s", normalize_path(path) or i18n.t("Folder")), {
       text = get_selected_text(),
       select_text = true,
       submit = function(text)
@@ -340,7 +341,7 @@ command.add(nil, {
   end,
 
   ["project-search:find-regex"] = function(path)
-    core.command_view:enter("Find Regex In " .. (normalize_path(path) or "Folder"), {
+    core.command_view:enter(i18n.f("Find Regex In %s", normalize_path(path) or i18n.t("Folder")), {
       submit = function(text)
         projectsearch.search_regex(text, path, true)
       end
@@ -348,7 +349,7 @@ command.add(nil, {
   end,
 
   ["project-search:fuzzy-find"] = function(path)
-    core.command_view:enter("Fuzzy Find Text In " .. (normalize_path(path) or "Folder"), {
+    core.command_view:enter(i18n.f("Fuzzy Find Text In %s", normalize_path(path) or i18n.t("Folder")), {
       text = get_selected_text(),
       select_text = true,
       submit = function(text)

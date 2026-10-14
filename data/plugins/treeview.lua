@@ -1,5 +1,6 @@
 -- mod-version:3
 local core = require "core"
+local i18n = require "core.i18n"
 local common = require "core.common"
 local command = require "core.command"
 local config = require "core.config"
@@ -673,9 +674,9 @@ command.add(
     }
     core.nag_view:show(
       string.format("Delete %s", file_type),
-      string.format(
+      i18n.f(
         "Are you sure you want to delete the %s?\n%s: %s",
-        file_type:lower(), file_type, relfilename
+        i18n.t(file_type:lower()), i18n.t(file_type), relfilename
       ),
       opt,
       function(item)

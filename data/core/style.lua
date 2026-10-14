@@ -22,11 +22,41 @@ style.tab_width = common.round(170 * SCALE)
 --
 -- On High DPI monitor or non RGB monitor you may consider using antialiasing grayscale instead.
 -- The antialiasing grayscale with full hinting is interesting for crisp font rendering.
-style.font = renderer.font.load(DATADIR .. "/fonts/FiraSans-Regular.ttf", 15 * SCALE)
+-- Japanese text is drawn with a system font: the bundled fonts have no
+-- Japanese glyphs, so it is added to each font group as a fallback.
+local function find_japanese_font()
+  local candidates = {
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/opentype/noto/NotoSansCJKjp-Regular.otf",
+    "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/opentype/ipaexfont-gothic/ipaexg.ttf",
+    "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
+  }
+  for _, path in ipairs(candidates) do
+    if system.get_file_info(path) then return path end
+  end
+  local ok, fp = pcall(io.popen, "fc-match -f '%{file}' ':lang=ja' 2>/dev/null")
+  if ok and fp then
+    local path = fp:read("*a")
+    fp:close()
+    if path and path ~= "" and system.get_file_info(path) then return path end
+  end
+end
+
+style.japanese_font_path = find_japanese_font()
+
+local function with_japanese(font, size)
+  if not style.japanese_font_path then return font end
+  local ok, jp = pcall(renderer.font.load, style.japanese_font_path, size)
+  if not ok then return font end
+  return renderer.font.group { font, jp }
+end
+
+style.font = with_japanese(renderer.font.load(DATADIR .. "/fonts/FiraSans-Regular.ttf", 15 * SCALE), 15 * SCALE)
 style.big_font = style.font:copy(46 * SCALE)
 style.icon_font = renderer.font.load(DATADIR .. "/fonts/icons.ttf", 16 * SCALE, {antialiasing="grayscale", hinting="full"})
 style.icon_big_font = style.icon_font:copy(23 * SCALE)
-style.code_font = renderer.font.load(DATADIR .. "/fonts/JetBrainsMono-Regular.ttf", 15 * SCALE)
+style.code_font = with_japanese(renderer.font.load(DATADIR .. "/fonts/JetBrainsMono-Regular.ttf", 15 * SCALE), 15 * SCALE)
 
 style.syntax = {}
 

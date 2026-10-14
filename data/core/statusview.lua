@@ -3,6 +3,7 @@ local common = require "core.common"
 local command = require "core.command"
 local config = require "core.config"
 local style = require "core.style"
+local i18n = require "core.i18n"
 local DocView = require "core.docview"
 local CommandView = require "core.commandview"
 local LogView = require "core.logview"
@@ -252,7 +253,7 @@ function StatusView:register_docview_items()
     get_item = function()
       local dv = core.active_view
       local indent_type, indent_size, indent_confirmed = dv.doc:get_indent_info()
-      local indent_label = (indent_type == "hard") and "tabs: " or "spaces: "
+      local indent_label = i18n.t((indent_type == "hard") and "tabs: " or "spaces: ")
       return {
         style.text, indent_label, indent_size,
         indent_confirmed and "" or "*"
@@ -278,7 +279,7 @@ function StatusView:register_docview_items()
         style.text,
         style.icon_font, "g",
         style.font, style.dim, self.separator2,
-        style.text, #dv.doc.lines, " lines",
+        style.text, #dv.doc.lines, i18n.t(" lines"),
       }
     end,
     separator = self.separator2
@@ -598,7 +599,7 @@ end
 ---@param item core.statusview.item
 function StatusView:draw_item_tooltip(item)
   core.root_view:defer_draw(function()
-    local text = item.tooltip
+    local text = i18n.t(item.tooltip)
     local w = style.font:get_width(text)
     local h = style.font:get_height()
     local x = self.pointer.x - (w / 2) - (style.padding.x * 2)

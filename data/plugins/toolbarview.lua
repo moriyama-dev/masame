@@ -3,6 +3,7 @@ local core = require "core"
 local common = require "core.common"
 local command = require "core.command"
 local style = require "core.style"
+local i18n = require "core.i18n"
 local keymap = require "core.keymap"
 local View = require "core.view"
 
@@ -17,11 +18,11 @@ function ToolbarView:new()
   self.tooltip = false
   self.toolbar_font = style.icon_big_font
   self.toolbar_commands = {
-    {symbol = "f", command = "core:new-doc"},
-    {symbol = "D", command = "core:open-file"},
-    {symbol = "S", command = "doc:save"},
-    {symbol = "L", command = "core:find-file"},
-    {symbol = "P", command = "core:open-user-module"},
+    {symbol = "f", command = "core:new-doc", tooltip = "New File"},
+    {symbol = "D", command = "core:open-file", tooltip = "Open File..."},
+    {symbol = "S", command = "doc:save", tooltip = "Save"},
+    {symbol = "L", command = "core:find-file", tooltip = "Go to File..."},
+    {symbol = "P", command = "core:open-user-module", tooltip = "Settings"},
   }
 end
 
@@ -112,7 +113,7 @@ function ToolbarView:on_mouse_moved(px, py, ...)
     if px > x and py > y and px <= x + w and py <= y + h then
       self.hovered_item = item
       local binding = keymap.get_binding(item.command)
-      local name = command.prettify_name(item.command)
+      local name = item.tooltip and i18n.t(item.tooltip) or command.prettify_name(item.command)
       core.status_view:show_tooltip(binding and { name, style.dim, "  ", binding } or { name })
       self.tooltip = true
       return
