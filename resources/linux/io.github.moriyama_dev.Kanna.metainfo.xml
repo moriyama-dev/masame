@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.moriyama_dev.Kanna</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Kanna</name>
+  <summary>A lightweight text editor</summary>
+  <summary xml:lang="ja">軽量なテキストエディタ</summary>
+  <content_rating type="oars-1.1" />
+  <launchable type="desktop-id">io.github.moriyama_dev.Kanna.desktop</launchable>
+
+  <description>
+    <p>
+      Kanna is a lightweight, fast text editor with only the features you need.
+      The interface is available in English and Japanese.
+    </p>
+    <p xml:lang="ja">
+      Kanna は、必要な機能だけに絞った軽くて速いテキストエディタです。
+      表示は英語と日本語に対応しています。
+    </p>
+  </description>
+
+  <url type="homepage">https://github.com/moriyama-dev/kanna</url>
+  <url type="bugtracker">https://github.com/moriyama-dev/kanna/issues</url>
+
+  <provides>
+    <binary>kanna</binary>
+  </provides>
+
+  <releases>
+  </releases>
+</component>

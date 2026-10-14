@@ -119,8 +119,7 @@ local function show_max_files_warning(dir)
   local message = dir.slow_filesystem and
     "Filesystem is too slow: project files will not be indexed." or
     "Too many files in project directory: stopped reading at "..
-    config.max_project_files.." files. For more information see "..
-    "usage.md at https://github.com/lite-xl/lite-xl."
+    config.max_project_files.." files."
   core.warn(message)
 end
 
@@ -504,9 +503,9 @@ local style = require "core.style"
 -- style.font = renderer.font.load(DATADIR .. "/fonts/FiraSans-Regular.ttf", 14 * SCALE)
 -- style.code_font = renderer.font.load(DATADIR .. "/fonts/JetBrainsMono-Regular.ttf", 14 * SCALE)
 --
--- DATADIR is the location of the installed Lite XL Lua code, default color
+-- DATADIR is the location of the installed Kanna Lua code, default color
 -- schemes and fonts.
--- USERDIR is the location of the Lite XL configuration directory.
+-- USERDIR is the location of the Kanna configuration directory.
 --
 -- font names used by lite:
 -- style.font          : user interface
@@ -795,7 +794,7 @@ function core.init()
     end
   end
   if not project_dir_abs then
-    system.show_fatal_error("Error", "Please restart Lite XL with a readable project directory.")
+    system.show_fatal_error("Error", "Please restart Kanna with a readable project directory.")
     os.exit(1)
   end
 
@@ -845,7 +844,7 @@ function core.init()
       "Refused Plugins",
       string.format(
         "Some plugins are not loaded due to version mismatch.\n\n%s.\n\n" ..
-        "Please download a recent version from https://github.com/lite-xl/lite-xl-plugins.",
+        "Please update these plugins.",
         table.concat(msg, ".\n\n")),
       opt, function(item)
         if item.text == "Exit" then os.exit(1) end
@@ -1305,7 +1304,7 @@ end
 
 
 function core.compose_window_title(title)
-  return (title == "" or title == nil) and "Lite XL" or title .. " - Lite XL"
+  return (title == "" or title == nil) and "Kanna" or title .. " - Kanna"
 end
 
 

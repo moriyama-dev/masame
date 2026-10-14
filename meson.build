@@ -1,6 +1,6 @@
-project('lite-xl',
+project('kanna',
     ['c'],
-    version : '2.1.8',
+    version : '0.1.0',
     license : 'MIT',
     meson_version : '>= 0.56',
     default_options : [
@@ -47,8 +47,7 @@ lite_cargs = [
     '-DPCRE2_STATIC',
     '-DLITE_PROJECT_VERSION_STR="@0@"'.format(version)
 ]
-# On macos we need to use the SDL renderer to support retina displays
-if get_option('renderer') or host_machine.system() == 'darwin'
+if get_option('renderer')
     lite_cargs += '-DLITE_USE_SDL_RENDERER'
 endif
 if get_option('arch_tuple') != ''
@@ -62,54 +61,27 @@ lite_cargs += '-DLITE_ARCH_TUPLE="@0@"'.format(arch_tuple)
 # Linker Settings
 #===============================================================================
 lite_link_args = []
-if host_machine.system() == 'darwin'
-    lite_link_args += ['-framework', 'CoreServices', '-framework', 'Foundation']
-endif
 #===============================================================================
 # Install Configuration
 #===============================================================================
-if get_option('portable') or host_machine.system() == 'windows'
+if get_option('portable')
     lite_bindir = '/'
     lite_docdir = '/doc'
     lite_datadir = '/data'
-    configure_file(
-        input: 'resources' / 'windows' / 'lite-xl.exe.manifest.in',
-        output: 'lite-xl.exe.manifest',
-        configuration: conf_data
-    )
-elif get_option('bundle') and host_machine.system() == 'darwin'
-    lite_cargs += '-DMACOS_USE_BUNDLE'
-    lite_bindir = 'Contents' / 'MacOS'
-    lite_docdir = 'Contents' / 'Resources'
-    lite_datadir = 'Contents' / 'Resources'
-    conf_data.set(
-        'CURRENT_YEAR',
-        run_command('date', '+%Y', capture: true).stdout().strip()
-    )
-    install_data('resources' / 'icons' / 'icon.icns', install_dir : 'Contents' / 'Resources')
-    configure_file(
-        input : 'resources' / 'macos' / 'Info.plist.in',
-        output : 'Info.plist',
-        configuration : conf_data,
-        install : true,
-        install_dir : 'Contents'
-    )
 else
-    message()
     lite_bindir = 'bin'
-    lite_docdir = get_option('datadir') / 'doc' / 'lite-xl'
-    lite_datadir = get_option('datadir') / 'lite-xl'
-    if host_machine.system() == 'linux'
-        install_data('resources' / 'icons' / 'lite-xl.svg',
-            install_dir : get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps'
-        )
-        install_data('resources' / 'linux' / 'org.lite_xl.lite_xl.desktop',
-            install_dir : get_option('datadir') / 'applications'
-        )
-        install_data('resources' / 'linux' / 'org.lite_xl.lite_xl.appdata.xml',
-            install_dir : get_option('datadir') / 'metainfo'
-        )
-    endif
+    lite_docdir = get_option('datadir') / 'doc' / 'kanna'
+    lite_datadir = get_option('datadir') / 'kanna'
+    install_data('resources' / 'icons' / 'kanna.svg',
+        install_dir : get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps',
+        rename : 'io.github.moriyama_dev.Kanna.svg'
+    )
+    install_data('resources' / 'linux' / 'io.github.moriyama_dev.Kanna.desktop',
+        install_dir : get_option('datadir') / 'applications'
+    )
+    install_data('resources' / 'linux' / 'io.github.moriyama_dev.Kanna.metainfo.xml',
+        install_dir : get_option('datadir') / 'metainfo'
+    )
 endif
 
 install_data('licenses' / 'licenses.md', install_dir : lite_docdir)
@@ -129,5 +101,4 @@ configure_file(
 
 if not get_option('source-only')
     subdir('src')
-    subdir('scripts')
 endif

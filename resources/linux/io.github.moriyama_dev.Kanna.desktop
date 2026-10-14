@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Kanna
+Comment=A lightweight text editor
+Comment[ja]=軽量なテキストエディタ
+Exec=kanna %F
+Icon=io.github.moriyama_dev.Kanna
+Terminal=false
+StartupWMClass=io.github.moriyama_dev.Kanna
+Categories=Utility;TextEditor;Development;
+MimeType=text/plain;
+Keywords=text;editor;
+Keywords[ja]=テキスト;エディタ;
