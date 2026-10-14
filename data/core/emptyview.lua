@@ -18,10 +18,9 @@ end
 
 local function draw_text(x, y, color)
   local lines = {
-    { fmt = "%s to run a command", cmd = "core:find-command" },
-    { fmt = "%s to open a file from the project", cmd = "core:find-file" },
-    { fmt = "%s to change project folder", cmd = "core:change-project-folder" },
-    { fmt = "%s to open a project folder", cmd = "core:open-project-folder" },
+    { fmt = "%s to create a new file", cmd = "core:new-doc" },
+    { fmt = "%s to open a file", cmd = "core:open-file" },
+    { fmt = "%s to go to a file in the folder", cmd = "core:find-file" },
   }
   local th = style.big_font:get_height()
   local dh = 2 * th + style.padding.y * 2

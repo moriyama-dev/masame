@@ -68,8 +68,7 @@ end
 
 local function reload_customizations()
   local user_error = not core.load_user_directory()
-  local project_error = not core.load_project_module()
-  if user_error or project_error then
+  if user_error then
     -- Use core.add_thread to delay opening the LogView, as opening
     -- it directly here disturbs the normal save operations.
     core.add_thread(function()
@@ -117,10 +116,10 @@ end
 
 local function show_max_files_warning(dir)
   local message = dir.slow_filesystem and
-    "Filesystem is too slow: project files will not be indexed." or
-    "Too many files in project directory: stopped reading at "..
+    "Filesystem is too slow: files in the folder will not be indexed." or
+    "Too many files in the folder: stopped reading at "..
     config.max_project_files.." files."
-  core.warn(message)
+  core.log_quiet(message)
 end
 
 
@@ -553,49 +552,6 @@ local style = require "core.style"
 end
 
 
-function core.write_init_project_module(init_filename)
-  local init_file = io.open(init_filename, "w")
-  if not init_file then error("cannot create file: \"" .. init_filename .. "\"") end
-  init_file:write([[
--- Put project's module settings here.
--- This module will be loaded when opening a project, after the user module
--- configuration.
--- It will be automatically reloaded when saved.
-
-local config = require "core.config"
-
--- you can add some patterns to ignore files within the project
--- config.ignore_files = {"^%.", <some-patterns>}
-
--- Patterns are normally applied to the file's or directory's name, without
--- its path. See below about how to apply filters on a path.
---
--- Here some examples:
---
--- "^%." matches any file of directory whose basename begins with a dot.
---
--- When there is an '/' or a '/$' at the end, the pattern will only match
--- directories. When using such a pattern a final '/' will be added to the name
--- of any directory entry before checking if it matches.
---
--- "^%.git/" matches any directory named ".git" anywhere in the project.
---
--- If a "/" appears anywhere in the pattern (except when it appears at the end or
--- is immediately followed by a '$'), then the pattern will be applied to the full
--- path of the file or directory. An initial "/" will be prepended to the file's
--- or directory's path to indicate the project's root.
---
--- "^/node_modules/" will match a directory named "node_modules" at the project's root.
--- "^/build.*/" will match any top level directory whose name begins with "build".
--- "^/subprojects/.+/" will match any directory inside a top-level folder named "subprojects".
-
--- You may activate some plugins on a per-project basis to override the user's settings.
--- config.plugins.trimwitespace = true
-]])
-  init_file:close()
-end
-
-
 function core.load_user_directory()
   return core.try(function()
     local stat_dir = system.get_file_info(USERDIR)
@@ -612,19 +568,6 @@ function core.load_user_directory()
 end
 
 
-function core.remove_project_directory(path)
-  -- skip the fist directory because it is the project's directory
-  for i = 2, #core.project_directories do
-    local dir = core.project_directories[i]
-    if dir.name == path then
-      table.remove(core.project_directories, i)
-      return true
-    end
-  end
-  return false
-end
-
-
 function core.configure_borderless_window()
   system.set_window_bordered(not config.borderless)
   core.title_view:configure_hit_test(config.borderless)
@@ -637,9 +580,8 @@ local function add_config_files_hooks()
   local doc_save = Doc.save
   local user_filename = system.absolute_path(USERDIR .. PATHSEP .. "init.lua")
   function Doc:save(filename, abs_filename)
-    local module_filename = system.absolute_path(".lite_project.lua")
     doc_save(self, filename, abs_filename)
-    if self.abs_filename == user_filename or self.abs_filename == module_filename then
+    if self.abs_filename == user_filename then
       reload_customizations()
       core.rescan_project_directories()
       core.configure_borderless_window()
@@ -760,7 +702,7 @@ function core.init()
   command.add_defaults()
 
   -- Load user module, plugins and project module
-  local got_user_error, got_project_error = not core.load_user_directory()
+  local got_user_error = not core.load_user_directory()
 
   -- try to load a bunch of directories
   local try_project_dirs = {project_dir}
@@ -776,12 +718,9 @@ function core.init()
   table.insert(try_project_dirs, DATADIR)
 
   local project_dir_abs
-  local function load_project_module()
-    got_project_error = not core.load_project_module()
-  end
   for _, p in ipairs(try_project_dirs) do
     local abs_dir = system.absolute_path(p)
-    if abs_dir and core.set_project_dir(abs_dir, load_project_module) then
+    if abs_dir and core.set_project_dir(abs_dir) then
       if p == project_dir and project_dir_explicit then
         update_recents_project("add", abs_dir)
       end
@@ -794,7 +733,7 @@ function core.init()
     end
   end
   if not project_dir_abs then
-    system.show_fatal_error("Error", "Please restart Masame with a readable project directory.")
+    system.show_fatal_error("Error", "Please restart Masame from a readable folder.")
     os.exit(1)
   end
 
@@ -803,7 +742,7 @@ function core.init()
 
   do
     local pdir, pname = project_dir_abs:match("(.*)[/\\\\](.*)")
-    core.log("Opening project %q from directory %s", pname, pdir)
+    core.log("Opening folder %q in %s", pname, pdir)
   end
 
   -- We add the project directory now because the project's module is loaded.
@@ -819,7 +758,7 @@ function core.init()
     core.root_view:open_doc(core.open_doc(filename))
   end
 
-  if not plugins_success or got_user_error or got_project_error then
+  if not plugins_success or got_user_error then
     -- defer LogView to after everything is initialized,
     -- so that EmptyView won't be added after LogView.
     core.add_thread(function()
@@ -1043,20 +982,6 @@ function core.load_plugins()
     (system.get_time() - load_start) * 1000
   )
   return no_errors, refused_list
-end
-
-
-function core.load_project_module()
-  local filename = ".lite_project.lua"
-  if system.get_file_info(filename) then
-    return core.try(function()
-      local fn, err = loadfile(filename)
-      if not fn then error("Error when loading project module:\n\t" .. err) end
-      fn()
-      core.log_quiet("Loaded project module")
-    end)
-  end
-  return true
 end
 
 

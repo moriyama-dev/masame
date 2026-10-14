@@ -21,7 +21,6 @@ function ToolbarView:new()
     {symbol = "D", command = "core:open-file"},
     {symbol = "S", command = "doc:save"},
     {symbol = "L", command = "core:find-file"},
-    {symbol = "B", command = "core:find-command"},
     {symbol = "P", command = "core:open-user-module"},
   }
 end

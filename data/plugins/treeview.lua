@@ -513,10 +513,6 @@ local function is_project_folder(path)
   return false
 end
 
-local function is_primary_project_folder(path)
-  return core.project_dir == path
-end
-
 
 local function treeitem() return view.hovered_item or view.selected_item end
 
@@ -545,18 +541,6 @@ menu:register(
   {
     { text = "New File", command = "treeview:new-file" },
     { text = "New Folder", command = "treeview:new-folder" },
-  }
-)
-
-menu:register(
-  function()
-    local item = treeitem()
-    return core.active_view:is(TreeView) and item
-      and not is_primary_project_folder(item.abs_filename)
-      and is_project_folder(item.abs_filename)
-  end,
-  {
-    { text = "Remove directory", command = "treeview:remove-project-directory" },
   }
 )
 
@@ -823,16 +807,6 @@ if projectsearch then
   })
 end
 
-command.add(function()
-    local item = treeitem()
-    return item
-           and not is_primary_project_folder(item.abs_filename)
-           and is_project_folder(item.abs_filename), item
-  end, {
-  ["treeview:remove-project-directory"] = function(item)
-    core.remove_project_directory(item.dir_name)
-  end,
-})
 
 
 keymap.add {

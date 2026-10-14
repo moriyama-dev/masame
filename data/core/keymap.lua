@@ -287,12 +287,9 @@ if macos then
 end
 
 keymap.add_direct {
-  ["ctrl+shift+p"] = "core:find-command",
   ["ctrl+p"] = "core:find-file",
   ["ctrl+o"] = "core:open-file",
   ["ctrl+n"] = "core:new-doc",
-  ["ctrl+shift+c"] = "core:change-project-folder",
-  ["ctrl+shift+o"] = "core:open-project-folder",
   ["ctrl+alt+r"] = "core:restart",
   ["alt+return"] = "core:toggle-fullscreen",
   ["f11"] = "core:toggle-fullscreen",

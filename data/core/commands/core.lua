@@ -64,28 +64,6 @@ command.add(nil, {
     })
   end,
 
-  ["core:find-command"] = function()
-    local commands = command.get_all_valid()
-    core.command_view:enter("Do Command", {
-      submit = function(text, item)
-        if item then
-          command.perform(item.command)
-        end
-      end,
-      suggest = function(text)
-        local res = common.fuzzy_match(commands, text)
-        for i, name in ipairs(res) do
-          res[i] = {
-            text = command.prettify_name(name),
-            info = keymap.get_binding(name),
-            command = name,
-          }
-        end
-        return res
-      end
-    })
-  end,
-
   ["core:find-file"] = function()
     if not core.project_files_number() then
        return command.perform "core:open-file"
@@ -97,7 +75,7 @@ command.add(nil, {
         table.insert(files, common.home_encode(path .. item.filename))
       end
     end
-    core.command_view:enter("Open File From Project", {
+    core.command_view:enter("Go to File", {
       submit = function(text, item)
         text = item and item.text or text
         core.root_view:open_doc(core.open_doc(common.home_expand(text)))
@@ -172,22 +150,13 @@ command.add(nil, {
     core.root_view:open_doc(user_module_doc)
   end,
 
-  ["core:open-project-module"] = function()
-    if not system.get_file_info(".lite_project.lua") then
-      core.try(core.write_init_project_module, ".lite_project.lua")
-    end
-    local doc = core.open_doc(".lite_project.lua")
-    core.root_view:open_doc(doc)
-    doc:save()
-  end,
-
-  ["core:change-project-folder"] = function()
+  ["core:open-folder"] = function()
     local dirname = common.dirname(core.project_dir)
     local text
     if dirname then
       text = common.home_encode(dirname) .. PATHSEP
     end
-    core.command_view:enter("Change Project Folder", {
+    core.command_view:enter("Open Folder", {
       text = text,
       submit = function(text)
         local path = common.home_expand(text)
@@ -202,69 +171,6 @@ command.add(nil, {
         end, abs_path)
       end,
       suggest = suggest_directory
-    })
-  end,
-
-  ["core:open-project-folder"] = function()
-    local dirname = common.dirname(core.project_dir)
-    local text
-    if dirname then
-      text = common.home_encode(dirname) .. PATHSEP
-    end
-    core.command_view:enter("Open Project", {
-      text = text,
-      submit = function(text)
-        local path = common.home_expand(text)
-        local abs_path = check_directory_path(path)
-        if not abs_path then
-          core.error("Cannot open directory %q", path)
-          return
-        end
-        if abs_path == core.project_dir then
-          core.error("Directory %q is currently opened", abs_path)
-          return
-        end
-        system.exec(string.format("%q %q", EXEFILE, abs_path))
-      end,
-      suggest = suggest_directory
-    })
-  end,
-
-  ["core:add-directory"] = function()
-    core.command_view:enter("Add Directory", {
-      submit = function(text)
-        text = common.home_expand(text)
-        local path_stat, err = system.get_file_info(text)
-        if not path_stat then
-          core.error("cannot open %q: %s", text, err)
-          return
-        elseif path_stat.type ~= 'dir' then
-          core.error("%q is not a directory", text)
-          return
-        end
-        core.add_project_directory(system.absolute_path(text))
-      end,
-      suggest = suggest_directory
-    })
-  end,
-
-  ["core:remove-directory"] = function()
-    local dir_list = {}
-    local n = #core.project_directories
-    for i = n, 2, -1 do
-      dir_list[n - i + 1] = core.project_directories[i].name
-    end
-    core.command_view:enter("Remove Directory", {
-      submit = function(text, item)
-        text = common.home_expand(item and item.text or text)
-        if not core.remove_project_directory(text) then
-          core.error("No directory %q to be removed", text)
-        end
-      end,
-      suggest = function(text)
-        text = common.home_expand(text)
-        return common.home_encode_list(common.dir_list_suggest(text, dir_list))
-      end
     })
   end,
 })
