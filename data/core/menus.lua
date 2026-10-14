@@ -55,7 +55,14 @@ command.add(nil, {
   end,
 
   ["core:open-website"] = function()
-    system.exec("xdg-open https://github.com/moriyama-dev/masame")
+    local url = "https://github.com/moriyama-dev/masame"
+    if PLATFORM == "Windows" then
+      system.exec(string.format("start \"\" %q", url))
+    elseif PLATFORM == "Mac OS X" then
+      system.exec(string.format("open %q", url))
+    else
+      system.exec(string.format("xdg-open %q", url))
+    end
   end,
 })
 

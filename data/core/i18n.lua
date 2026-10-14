@@ -49,6 +49,10 @@ local function is_supported(lang)
 end
 
 local function detect_system_language()
+  if PLATFORM ~= "Linux" and system.get_preferred_language then
+    local ok, lang = pcall(system.get_preferred_language)
+    if ok and lang then return lang == "ja" and "ja" or "en" end
+  end
   for _, var in ipairs { "LC_ALL", "LC_MESSAGES", "LANGUAGE", "LANG" } do
     local value = os.getenv(var)
     if value and value ~= "" then

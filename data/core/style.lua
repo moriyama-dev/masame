@@ -25,16 +25,33 @@ style.tab_width = common.round(170 * SCALE)
 -- Japanese text is drawn with a system font: the bundled fonts have no
 -- Japanese glyphs, so it is added to each font group as a fallback.
 local function find_japanese_font()
-  local candidates = {
-    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-    "/usr/share/fonts/opentype/noto/NotoSansCJKjp-Regular.otf",
-    "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
-    "/usr/share/fonts/opentype/ipaexfont-gothic/ipaexg.ttf",
-    "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
-  }
+  local candidates
+  if PLATFORM == "Windows" then
+    local fonts = (os.getenv("WINDIR") or "C:\\Windows") .. "\\Fonts\\"
+    candidates = {
+      fonts .. "YuGothM.ttc", fonts .. "YuGothR.ttc", fonts .. "meiryo.ttc",
+      fonts .. "msgothic.ttc",
+    }
+  elseif PLATFORM == "Mac OS X" then
+    candidates = {
+      "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+      "/System/Library/Fonts/Hiragino Sans GB.ttc",
+      "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+      "/Library/Fonts/Arial Unicode.ttf",
+    }
+  else
+    candidates = {
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+      "/usr/share/fonts/opentype/noto/NotoSansCJKjp-Regular.otf",
+      "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+      "/usr/share/fonts/opentype/ipaexfont-gothic/ipaexg.ttf",
+      "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
+    }
+  end
   for _, path in ipairs(candidates) do
     if system.get_file_info(path) then return path end
   end
+  if PLATFORM == "Windows" or PLATFORM == "Mac OS X" then return end
   local ok, fp = pcall(io.popen, "fc-match -f '%{file}' ':lang=ja' 2>/dev/null")
   if ok and fp then
     local path = fp:read("*a")

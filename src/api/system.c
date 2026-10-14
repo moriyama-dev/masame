@@ -171,6 +171,21 @@ static void push_win32_error(lua_State *L, DWORD rc) {
 #endif
 
 
+
+/* system.get_preferred_language() -> language code such as "ja", or nil */
+static int f_get_preferred_language(lua_State *L) {
+  int count = 0;
+  SDL_Locale **locales = SDL_GetPreferredLocales(&count);
+  if (!locales || count == 0 || !locales[0]->language) {
+    SDL_free(locales);
+    lua_pushnil(L);
+    return 1;
+  }
+  lua_pushstring(L, locales[0]->language);
+  SDL_free(locales);
+  return 1;
+}
+
 /* Native file dialogs. The result arrives later as a "dialogfinished" event
    carrying the request id and the chosen paths (or nil and an error). */
 static Uint32 dialog_event_type = 0;
@@ -1197,6 +1212,7 @@ static const luaL_Reg lib[] = {
   { "path_compare",        f_path_compare        },
   { "get_fs_type",         f_get_fs_type         },
   { "show_file_dialog",    f_show_file_dialog    },
+  { "get_preferred_language", f_get_preferred_language },
   { NULL, NULL }
 };
 

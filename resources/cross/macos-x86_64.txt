@@ -1,0 +1,24 @@
+# Cross file for building the Intel (x86_64) slice on an Apple Silicon Mac.
+# The universal binary is made with lipo from the arm64 and x86_64 builds.
+
+[host_machine]
+system = 'darwin'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
+[binaries]
+c = ['clang']
+objc = ['clang']
+ar = ['ar']
+strip = ['strip']
+pkg-config = ['pkg-config']
+
+[properties]
+needs_exe_wrapper = true
+
+[built-in options]
+c_args = ['-arch', 'x86_64', '-mmacosx-version-min=11.0']
+objc_args = ['-arch', 'x86_64', '-mmacosx-version-min=11.0']
+c_link_args = ['-arch', 'x86_64', '-mmacosx-version-min=11.0']
+objc_link_args = ['-arch', 'x86_64', '-mmacosx-version-min=11.0']

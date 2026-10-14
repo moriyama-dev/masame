@@ -1,9 +1,9 @@
-name: Release (Linux x64)
+name: Release
 
 on:
   push:
     tags:
-      # Version tags such as 0.1.0 (no "v" prefix), matching meson.build
+      # Version tags such as 0.2.0 (no "v" prefix), matching meson.build
       - '[0-9]+.[0-9]+.[0-9]+'
   workflow_dispatch:
     inputs:
@@ -13,17 +13,39 @@ on:
         default: true
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build:
+  version:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - id: version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          MESON_VERSION="$( sed -n "s/^ *version : '\([^']*\)'.*/\1/p" meson.build | head -1 )"
+          if [[ "${REF_TYPE}" == "tag" && "${REF_NAME}" != "${MESON_VERSION}" ]]; then
+            echo "Tag ${REF_NAME} does not match meson.build (${MESON_VERSION})" >&2
+            exit 1
+          fi
+          echo "version=${MESON_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "Release version: ${MESON_VERSION}"
+
+  linux:
+    needs: version
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -37,21 +59,8 @@ jobs:
             libxfixes-dev libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols \
             libdecor-0-dev libegl-dev libgl-dev libdbus-1-dev libibus-1.0-dev dpkg-dev
 
-      - name: Determine the version
-        env:
-          REF_TYPE: ${{ github.ref_type }}
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          MESON_VERSION="$( sed -n "s/^ *version : '\([^']*\)'.*/\1/p" meson.build | head -1 )"
-          if [[ "${REF_TYPE}" == "tag" && "${REF_NAME}" != "${MESON_VERSION}" ]]; then
-            echo "Tag ${REF_NAME} does not match meson.build (${MESON_VERSION})" >&2
-            exit 1
-          fi
-          echo "RELEASE_VERSION=${MESON_VERSION}" >> "${GITHUB_ENV}"
-          echo "Release version: ${MESON_VERSION}"
-
       - name: Build the packages
-        run: scripts/package-deb.sh "${RELEASE_VERSION}"
+        run: scripts/package-deb.sh "${{ needs.version.outputs.version }}"
 
       - name: Check the packages
         run: |
@@ -59,16 +68,115 @@ jobs:
           sha256sum -c ./*.sha256
           dpkg-deb -I ./*.deb
 
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linux
+          path: dist/*
+          if-no-files-found: error
+
+  windows:
+    needs: version
+    runs-on: windows-2025
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            zip
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-meson
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-pkgconf
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup --no-progress -y
+          }
+
+      - name: Build the packages
+        run: scripts/package-windows.sh "${{ needs.version.outputs.version }}"
+
+      - name: Check the packages
+        run: |
+          cd dist
+          ls -la
+          test -f masame-*-windows-x64.zip
+          test -f masame-*-windows-x64-setup.exe
+          sha256sum -c ./*.sha256
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows
+          path: dist/*
+          if-no-files-found: error
+
+  macos:
+    needs: version
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install build dependencies
+        run: brew install bash meson ninja cmake pkgconf
+
+      - name: Build the packages
+        run: bash scripts/package-macos.sh "${{ needs.version.outputs.version }}"
+
+      - name: Check the packages
+        run: |
+          cd dist
+          shasum -a 256 -c ./*.sha256
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macos
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    needs: [version, linux, windows, macos]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
           PRERELEASE: ${{ github.event_name == 'push' || github.event.inputs.prerelease == 'true' }}
         run: |
+          ls -la dist
+          (cd dist && sha256sum -c ./*.sha256 2>/dev/null || shasum -a 256 -c ./*.sha256)
+
           NOTES=".github/release-notes/${RELEASE_VERSION}.md"
           if [[ ! -f "${NOTES}" ]]; then
             NOTES="$( mktemp )"
-            printf 'Masame %s (Linux x64)\n' "${RELEASE_VERSION}" > "${NOTES}"
+            printf 'Masame %s\n' "${RELEASE_VERSION}" > "${NOTES}"
           fi
 
           FLAGS=()
@@ -85,3 +193,33 @@ jobs:
               --target "${GITHUB_SHA}" \
               "${FLAGS[@]}"
           fi
+
+  homebrew:
+    # Update the cask in this repository (tapped with
+    # `brew tap moriyama-dev/masame https://github.com/moriyama-dev/masame`)
+    needs: [version, publish]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - name: Update Casks/masame.rb
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          DMG="masame-${RELEASE_VERSION}-macos-universal.dmg"
+          gh release download "${RELEASE_VERSION}" --pattern "${DMG}.sha256" --dir "${RUNNER_TEMP}"
+          SHA256="$( cut -d' ' -f1 "${RUNNER_TEMP}/${DMG}.sha256" )"
+          sed -i -e "s/^  version \".*\"/  version \"${RELEASE_VERSION}\"/" \
+                 -e "s/^  sha256 \".*\"/  sha256 \"${SHA256}\"/" Casks/masame.rb
+          git diff --stat
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Update the Homebrew cask to ${RELEASE_VERSION}"
+          git push origin HEAD:main

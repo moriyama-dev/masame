@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
-# Build Masame on Linux.
+# Build Masame on Linux, Windows (MSYS2 MINGW64) or macOS.
 #
-# SDL3 is not packaged on Ubuntu 24.04, so it is downloaded, built and linked
-# statically. X11/Wayland libraries are loaded at runtime (SDL_DEPS_SHARED).
+# SDL3 is downloaded, built and linked statically. On Linux, X11/Wayland
+# libraries are loaded at runtime (SDL_DEPS_SHARED). On macOS, SDL3 is built
+# as a universal (arm64 + x86_64) library.
 #
 # Usage: scripts/build.sh [-b <build dir>] [-r] [-p <prefix>] [--portable]
+#                         [--bundle] [--cross-file <file>]
 #   -b  build directory (default: build)
 #   -r  release build (default: debugoptimized)
 #   -p  install prefix (default: /usr)
-#   --portable  install data next to the executable (for local testing)
+#   --portable    install data next to the executable (always on Windows)
+#   --bundle      macOS: install as Masame.app layout
+#   --cross-file  Meson cross file (macOS: build the x86_64 slice)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -20,15 +24,34 @@ build_dir="build"
 build_type="debugoptimized"
 prefix="/usr"
 portable="false"
+bundle="false"
+cross_file=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -b) build_dir="$2"; shift 2;;
     -r) build_type="release"; shift;;
     -p) prefix="$2"; shift 2;;
     --portable) portable="true"; shift;;
+    --bundle) bundle="true"; shift;;
+    --cross-file) cross_file="$2"; shift 2;;
     *) echo "unknown option: $1" >&2; exit 1;;
   esac
 done
+
+case "$(uname -s)" in
+  Linux*) os="linux";;
+  Darwin*) os="macos";;
+  MINGW*|MSYS*|CYGWIN*) os="windows";;
+  *) echo "unsupported system: $(uname -s)" >&2; exit 1;;
+esac
+
+sdl_os_flags=()
+case "$os" in
+  linux) sdl_os_flags=(-DSDL_DEPS_SHARED=ON -DSDL_DBUS=ON -DSDL_IBUS=ON -DSDL_X11=ON -DSDL_WAYLAND=ON -DSDL_PIPEWIRE=OFF -DSDL_LIBUDEV=OFF);;
+  macos) export MACOSX_DEPLOYMENT_TARGET="11.0"
+         sdl_os_flags=("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0);;
+  windows) portable="true";;
+esac
 
 mkdir -p "$build_dir"
 sdl_dir="$build_dir/SDL3-$SDL3_VERSION"
@@ -45,22 +68,30 @@ if [[ ! -f "$sdl_prefix/lib/pkgconfig/sdl3.pc" ]]; then
   tar -xzf "$tarball" -C "$build_dir"
   cmake -S "$sdl_dir" -B "$sdl_dir/build" -GNinja \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_PREFIX="$sdl_prefix" \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DSDL_INSTALL=ON -DSDL_INSTALL_DOCS=OFF -DSDL_DEPS_SHARED=ON \
-    -DSDL_DBUS=ON -DSDL_IBUS=ON -DSDL_AUDIO=OFF -DSDL_GPU=OFF -DSDL_RPATH=OFF -DSDL_PIPEWIRE=OFF \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DSDL_INSTALL=ON -DSDL_INSTALL_DOCS=OFF \
+    -DSDL_AUDIO=OFF -DSDL_GPU=OFF -DSDL_RPATH=OFF \
     -DSDL_CAMERA=OFF -DSDL_JOYSTICK=OFF -DSDL_HAPTIC=OFF -DSDL_HIDAPI=OFF -DSDL_DIALOG=ON \
-    -DSDL_POWER=OFF -DSDL_SENSOR=OFF -DSDL_VULKAN=OFF -DSDL_LIBUDEV=OFF -DSDL_SHARED=OFF -DSDL_STATIC=ON \
-    -DSDL_X11=ON -DSDL_WAYLAND=ON -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_VENDOR_INFO=masame
+    -DSDL_POWER=OFF -DSDL_SENSOR=OFF -DSDL_VULKAN=OFF -DSDL_SHARED=OFF -DSDL_STATIC=ON \
+    -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_VENDOR_INFO=masame "${sdl_os_flags[@]}"
   cmake --build "$sdl_dir/build"
   cmake --install "$sdl_dir/build"
 fi
 
 meson_dir="$build_dir/meson"
+if [[ -n "$cross_file" ]]; then
+  meson_dir="$build_dir/meson-$(basename "$cross_file" .txt)"
+fi
 if [[ ! -d "$meson_dir" ]]; then
-  meson setup "$meson_dir" \
+  extra=()
+  [[ -n "$cross_file" ]] && extra+=(--cross-file "$cross_file")
+  [[ "$os" == "macos" ]] && extra+=(-Dbundle="$bundle")
+  # SDL3 is the only dependency taken from outside the Meson wraps
+  PKG_CONFIG_PATH="$sdl_prefix/lib/pkgconfig" meson setup "$meson_dir" \
     --buildtype="$build_type" \
     --prefix="$prefix" \
     --pkg-config-path="$sdl_prefix/lib/pkgconfig" \
     --wrap-mode=forcefallback \
-    -Dportable="$portable"
+    -Dportable="$portable" \
+    "${extra[@]}"
 fi
 meson compile -C "$meson_dir"

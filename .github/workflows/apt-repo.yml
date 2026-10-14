@@ -3,7 +3,7 @@ name: APT repository
 on:
   # Rebuild the repository after each successful release build
   workflow_run:
-    workflows: ['Release (Linux x64)']
+    workflows: ['Release']
     types: [completed]
   workflow_dispatch:
 

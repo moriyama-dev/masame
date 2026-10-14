@@ -1,6 +1,6 @@
 project('masame',
     ['c'],
-    version : '0.1.0',
+    version : '0.2.0',
     license : 'MIT',
     meson_version : '>= 0.56',
     default_options : [
@@ -47,7 +47,8 @@ lite_cargs = [
     '-DPCRE2_STATIC',
     '-DLITE_PROJECT_VERSION_STR="@0@"'.format(version)
 ]
-if get_option('renderer')
+# On macOS the SDL renderer is used to support Retina displays
+if get_option('renderer') or host_machine.system() == 'darwin'
     lite_cargs += '-DLITE_USE_SDL_RENDERER'
 endif
 if get_option('arch_tuple') != ''
@@ -61,13 +62,39 @@ lite_cargs += '-DLITE_ARCH_TUPLE="@0@"'.format(arch_tuple)
 # Linker Settings
 #===============================================================================
 lite_link_args = []
+if host_machine.system() == 'darwin'
+    lite_link_args += ['-framework', 'CoreServices', '-framework', 'Foundation']
+elif host_machine.system() == 'windows'
+    # One self-contained .exe: no libgcc/libwinpthread DLLs
+    lite_link_args += ['-static']
+endif
 #===============================================================================
 # Install Configuration
 #===============================================================================
-if get_option('portable')
+if get_option('portable') or host_machine.system() == 'windows'
     lite_bindir = '/'
     lite_docdir = '/doc'
     lite_datadir = '/data'
+    if host_machine.system() == 'windows'
+        configure_file(
+            input: 'resources' / 'windows' / 'masame.exe.manifest.in',
+            output: 'masame.exe.manifest',
+            configuration: conf_data
+        )
+    endif
+elif get_option('bundle') and host_machine.system() == 'darwin'
+    lite_cargs += '-DMACOS_USE_BUNDLE'
+    lite_bindir = 'Contents' / 'MacOS'
+    lite_docdir = 'Contents' / 'Resources'
+    lite_datadir = 'Contents' / 'Resources'
+    install_data('resources' / 'icons' / 'icon.icns', install_dir : 'Contents' / 'Resources')
+    configure_file(
+        input : 'resources' / 'macos' / 'Info.plist.in',
+        output : 'Info.plist',
+        configuration : conf_data,
+        install : true,
+        install_dir : 'Contents'
+    )
 else
     lite_bindir = 'bin'
     lite_docdir = get_option('datadir') / 'doc' / 'masame'

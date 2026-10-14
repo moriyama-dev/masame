@@ -108,7 +108,11 @@ endif
 message('dirmonitor_backend: @0@'.format(dirmonitor_backend))
 
 lite_rc = []
-if host_machine.system() == 'darwin'
+if host_machine.system() == 'windows'
+    windows = import('windows')
+    lite_rc += windows.compile_resources('..' / 'resources' / 'icons' / 'icon.rc')
+    lite_rc += windows.compile_resources('..' / 'resources' / 'windows' / 'manifest.rc')
+elif host_machine.system() == 'darwin'
     add_languages('objc')
     lite_sources += 'bundle_open.m'
 endif
