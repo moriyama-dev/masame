@@ -169,7 +169,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
-          PRERELEASE: ${{ github.event_name == 'push' || github.event.inputs.prerelease == 'true' }}
+          # Tag pushes make normal releases; manual runs can be pre-releases
+          PRERELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.prerelease == 'true' }}
         run: |
           ls -la dist
           (cd dist && sha256sum -c ./*.sha256 2>/dev/null || shasum -a 256 -c ./*.sha256)
