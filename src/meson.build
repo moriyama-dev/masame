@@ -115,7 +115,7 @@ endif
 
 lite_includes += include_directories('.')
 
-executable('kanna',
+executable('masame',
     lite_sources + lite_rc,
     include_directories: lite_includes,
     dependencies: lite_deps,

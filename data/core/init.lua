@@ -503,9 +503,9 @@ local style = require "core.style"
 -- style.font = renderer.font.load(DATADIR .. "/fonts/FiraSans-Regular.ttf", 14 * SCALE)
 -- style.code_font = renderer.font.load(DATADIR .. "/fonts/JetBrainsMono-Regular.ttf", 14 * SCALE)
 --
--- DATADIR is the location of the installed Kanna Lua code, default color
+-- DATADIR is the location of the installed Masame Lua code, default color
 -- schemes and fonts.
--- USERDIR is the location of the Kanna configuration directory.
+-- USERDIR is the location of the Masame configuration directory.
 --
 -- font names used by lite:
 -- style.font          : user interface
@@ -794,7 +794,7 @@ function core.init()
     end
   end
   if not project_dir_abs then
-    system.show_fatal_error("Error", "Please restart Kanna with a readable project directory.")
+    system.show_fatal_error("Error", "Please restart Masame with a readable project directory.")
     os.exit(1)
   end
 
@@ -1304,7 +1304,7 @@ end
 
 
 function core.compose_window_title(title)
-  return (title == "" or title == nil) and "Kanna" or title .. " - Kanna"
+  return (title == "" or title == nil) and "Masame" or title .. " - Masame"
 end
 
 

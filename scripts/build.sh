@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build Kanna on Linux.
+# Build Masame on Linux.
 #
 # SDL3 is not packaged on Ubuntu 24.04, so it is downloaded, built and linked
 # statically. X11/Wayland libraries are loaded at runtime (SDL_DEPS_SHARED).
@@ -49,7 +49,7 @@ if [[ ! -f "$sdl_prefix/lib/pkgconfig/sdl3.pc" ]]; then
     -DSDL_DBUS=ON -DSDL_IBUS=ON -DSDL_AUDIO=OFF -DSDL_GPU=OFF -DSDL_RPATH=OFF -DSDL_PIPEWIRE=OFF \
     -DSDL_CAMERA=OFF -DSDL_JOYSTICK=OFF -DSDL_HAPTIC=OFF -DSDL_HIDAPI=OFF -DSDL_DIALOG=OFF \
     -DSDL_POWER=OFF -DSDL_SENSOR=OFF -DSDL_VULKAN=OFF -DSDL_LIBUDEV=OFF -DSDL_SHARED=OFF -DSDL_STATIC=ON \
-    -DSDL_X11=ON -DSDL_WAYLAND=ON -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_VENDOR_INFO=kanna
+    -DSDL_X11=ON -DSDL_WAYLAND=ON -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_VENDOR_INFO=masame
   cmake --build "$sdl_dir/build"
   cmake --install "$sdl_dir/build"
 fi

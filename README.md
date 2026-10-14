@@ -1,8 +1,8 @@
-# Kanna
+# Masame
 
 **English** | [日本語](#日本語)
 
-Kanna is a lightweight, fast text editor for Linux.
+Masame is a lightweight, fast text editor for Linux.
 It keeps a familiar, minimal interface and leaves out features you do not need.
 
 - Interface languages: English and Japanese (easy to switch)
@@ -13,7 +13,7 @@ It keeps a familiar, minimal interface and leaves out features you do not need.
 
 ## Building
 
-Kanna is developed on Ubuntu 24.04.
+Masame is developed on Ubuntu 24.04.
 
 ```sh
 sudo apt install build-essential meson ninja-build cmake pkg-config \
@@ -25,7 +25,7 @@ scripts/build.sh
 ```
 
 `scripts/build.sh` downloads and builds SDL3 (statically linked), then builds
-Kanna with Meson. FreeType, PCRE2 and Lua are built from the Meson wraps in
+Masame with Meson. FreeType, PCRE2 and Lua are built from the Meson wraps in
 `subprojects/`.
 
 To run it without installing:
@@ -33,20 +33,21 @@ To run it without installing:
 ```sh
 scripts/build.sh -b build-portable --portable
 DESTDIR="$PWD/build-portable/install" meson install -C build-portable/meson --skip-subprojects
-build-portable/install/kanna
+build-portable/install/masame
 ```
 
 ## License
 
-MIT. Kanna is based on [Lite XL](https://github.com/lite-xl/lite-xl).
+MIT. Masame is based on [Lite XL](https://github.com/lite-xl/lite-xl).
 See [LICENSE](LICENSE) and [licenses/licenses.md](licenses/licenses.md).
 
 ---
 
 ## 日本語
 
-Kanna（鉋）は、Linux 向けの軽くて速いテキストエディタです。
+Masame（柾目）は、Linux 向けの軽くて速いテキストエディタです。
 なじみのあるシンプルな画面のまま、使わない機能を削っています。
+名前の柾目は、まっすぐにそろった木目のことです。
 
 - 表示言語：英語と日本語（簡単に切り替えられます）
 - コマンドパレット、ビルド、プロジェクトの機能はありません（削除作業中）
@@ -61,4 +62,4 @@ Ubuntu 24.04 で開発しています。必要なパッケージと手順は、�
 
 ### ライセンス
 
-MIT ライセンスです。Kanna は [Lite XL](https://github.com/lite-xl/lite-xl) をもとにしています。
+MIT ライセンスです。Masame は [Lite XL](https://github.com/lite-xl/lite-xl) をもとにしています。

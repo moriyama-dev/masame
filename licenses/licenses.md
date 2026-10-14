@@ -24,7 +24,7 @@ SOFTWARE.
 
 ## Lite XL
 
-Kanna is based on Lite XL (https://github.com/lite-xl/lite-xl).
+Masame is based on Lite XL (https://github.com/lite-xl/lite-xl).
 
 Copyright (c) 2020-2022 Francesco Abbate
 Copyright (c) 2022-present Lite XL Team

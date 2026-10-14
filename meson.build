@@ -1,4 +1,4 @@
-project('kanna',
+project('masame',
     ['c'],
     version : '0.1.0',
     license : 'MIT',
@@ -70,16 +70,16 @@ if get_option('portable')
     lite_datadir = '/data'
 else
     lite_bindir = 'bin'
-    lite_docdir = get_option('datadir') / 'doc' / 'kanna'
-    lite_datadir = get_option('datadir') / 'kanna'
-    install_data('resources' / 'icons' / 'kanna.svg',
+    lite_docdir = get_option('datadir') / 'doc' / 'masame'
+    lite_datadir = get_option('datadir') / 'masame'
+    install_data('resources' / 'icons' / 'masame.svg',
         install_dir : get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps',
-        rename : 'io.github.moriyama_dev.Kanna.svg'
+        rename : 'io.github.moriyama_dev.Masame.svg'
     )
-    install_data('resources' / 'linux' / 'io.github.moriyama_dev.Kanna.desktop',
+    install_data('resources' / 'linux' / 'io.github.moriyama_dev.Masame.desktop',
         install_dir : get_option('datadir') / 'applications'
     )
-    install_data('resources' / 'linux' / 'io.github.moriyama_dev.Kanna.metainfo.xml',
+    install_data('resources' / 'linux' / 'io.github.moriyama_dev.Masame.metainfo.xml',
         install_dir : get_option('datadir') / 'metainfo'
     )
 endif

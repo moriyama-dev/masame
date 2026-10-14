@@ -114,7 +114,7 @@ config.plugins.scale.config_spec = {
   },
   {
     label = "Default Scale",
-    description = "The scaling factor applied to Kanna.",
+    description = "The scaling factor applied to Masame.",
     path = "default_scale",
     type = "selection",
     default = "autodetect",

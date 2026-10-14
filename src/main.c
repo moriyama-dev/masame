@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
   signal(SIGPIPE, SIG_IGN);
 #endif
 
-  SDL_SetAppMetadata("Kanna", LITE_PROJECT_VERSION_STR, "io.github.moriyama_dev.Kanna");
+  SDL_SetAppMetadata("Masame", LITE_PROJECT_VERSION_STR, "io.github.moriyama_dev.Masame");
 
   if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
     fprintf(stderr, "Error initializing SDL: %s", SDL_GetError());
@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
     "", (dm ? dm->w : 2) * 0.8, (dm ? dm->h : 2) * 0.8,
     SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN);
   if (!window) {
-    fprintf(stderr, "Error creating Kanna window: %s", SDL_GetError());
+    fprintf(stderr, "Error creating Masame window: %s", SDL_GetError());
     exit(1);
   }
   init_window_icon();
@@ -214,8 +214,8 @@ init_lua:
     "  HOME = os.getenv('" LITE_OS_HOME "')\n"
     "  local exedir = match(EXEFILE, '^(.*)" LITE_PATHSEP_PATTERN LITE_NONPATHSEP_PATTERN "$')\n"
     "  local prefix = match(exedir, '^(.*)" LITE_PATHSEP_PATTERN "bin$')\n"
-    "  dofile((MACOS_RESOURCES or (prefix and prefix .. '/share/kanna' or exedir .. '/data')) .. '/core/start.lua')\n"
-    "  core = require(os.getenv('KANNA_RUNTIME') or 'core')\n"
+    "  dofile((MACOS_RESOURCES or (prefix and prefix .. '/share/masame' or exedir .. '/data')) .. '/core/start.lua')\n"
+    "  core = require(os.getenv('MASAME_RUNTIME') or 'core')\n"
     "  core.init()\n"
     "  core.run()\n"
     "end, function(err)\n"
@@ -232,7 +232,7 @@ init_lua:
     "    fp:write(debug.traceback(nil, 4)..'\\n')\n"
     "    fp:close()\n"
     "  end\n"
-    "  system.show_fatal_error('Kanna internal error',\n"
+    "  system.show_fatal_error('Masame internal error',\n"
     "    'An internal error occurred in a critical part of the application.\\n\\n'..\n"
     "    'Please verify the file \\\"error.txt\\\" in the directory '..error_dir)\n"
     "  os.exit(1)\n"
@@ -250,7 +250,7 @@ init_lua:
     goto init_lua;
   }
 
-  // This allows the window to be destroyed before Kanna is done with
+  // This allows the window to be destroyed before Masame is done with
   // reaping child processes
   ren_free_window_resources(&window_renderer);
   lua_close(L);

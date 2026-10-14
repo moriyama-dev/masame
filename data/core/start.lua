@@ -1,4 +1,4 @@
--- this file is used by Kanna to setup the Lua environment when starting
+-- this file is used by Masame to setup the Lua environment when starting
 VERSION = "@PROJECT_VERSION@"
 MOD_VERSION = "3"
 
@@ -10,12 +10,12 @@ if MACOS_RESOURCES then
   DATADIR = MACOS_RESOURCES
 else
   local prefix = EXEDIR:match("^(.+)[/\\]bin$")
-  DATADIR = prefix and (prefix .. PATHSEP .. 'share' .. PATHSEP .. 'kanna') or (EXEDIR .. PATHSEP .. 'data')
+  DATADIR = prefix and (prefix .. PATHSEP .. 'share' .. PATHSEP .. 'masame') or (EXEDIR .. PATHSEP .. 'data')
 end
 USERDIR = (system.get_file_info(EXEDIR .. PATHSEP .. 'user') and (EXEDIR .. PATHSEP .. 'user'))
        or os.getenv("LITE_USERDIR")
-       or ((os.getenv("XDG_CONFIG_HOME") and os.getenv("XDG_CONFIG_HOME") .. PATHSEP .. "kanna"))
-       or (HOME and (HOME .. PATHSEP .. '.config' .. PATHSEP .. 'kanna'))
+       or ((os.getenv("XDG_CONFIG_HOME") and os.getenv("XDG_CONFIG_HOME") .. PATHSEP .. "masame"))
+       or (HOME and (HOME .. PATHSEP .. '.config' .. PATHSEP .. 'masame'))
 
 package.path = DATADIR .. '/?.lua;'
 package.path = DATADIR .. '/?/init.lua;' .. package.path

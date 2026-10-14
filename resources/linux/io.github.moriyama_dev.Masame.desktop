@@ -1,12 +1,12 @@
 [Desktop Entry]
 Type=Application
-Name=Kanna
+Name=Masame
 Comment=A lightweight text editor
 Comment[ja]=軽量なテキストエディタ
-Exec=kanna %F
-Icon=io.github.moriyama_dev.Kanna
+Exec=masame %F
+Icon=io.github.moriyama_dev.Masame
 Terminal=false
-StartupWMClass=io.github.moriyama_dev.Kanna
+StartupWMClass=io.github.moriyama_dev.Masame
 Categories=Utility;TextEditor;Development;
 MimeType=text/plain;
 Keywords=text;editor;

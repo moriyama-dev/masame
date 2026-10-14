@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rasterize resources/icons/kanna.svg into resources/icons/icon.inl (64x64 RGBA).
+"""Rasterize resources/icons/masame.svg into resources/icons/icon.inl (64x64 RGBA).
 
 Only <rect> elements (with rx and fill) are supported, which is all the icon uses.
 """
@@ -11,7 +11,7 @@ SIZE = 64
 SS = 4  # supersampling per axis
 
 root = os.path.join(os.path.dirname(__file__), "..", "resources", "icons")
-tree = ET.parse(os.path.join(root, "kanna.svg"))
+tree = ET.parse(os.path.join(root, "masame.svg"))
 vb = [float(v) for v in tree.getroot().get("viewBox").split()]
 scale = SIZE / vb[2]
 
