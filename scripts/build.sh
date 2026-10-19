@@ -57,7 +57,18 @@ mkdir -p "$build_dir"
 sdl_dir="$build_dir/SDL3-$SDL3_VERSION"
 sdl_prefix="$(cd "$build_dir" && pwd -P)/sdl3-prefix"
 
-if [[ ! -f "$sdl_prefix/lib/pkgconfig/sdl3.pc" ]]; then
+# Small fixes to SDL3 itself (resources/<os>/sdl3-*.patch). SDL3 is rebuilt
+# whenever this set of patches changes.
+sdl_patches=()
+for p in resources/"$os"/sdl3-*.patch; do
+  [[ -f "$p" ]] && sdl_patches+=("$p")
+done
+sdl_stamp="$SDL3_VERSION"
+if (( ${#sdl_patches[@]} )); then
+  sdl_stamp="$sdl_stamp $(cat "${sdl_patches[@]}" | sha256sum | cut -d' ' -f1)"
+fi
+
+if [[ ! -f "$sdl_prefix/lib/pkgconfig/sdl3.pc" || "$(cat "$sdl_prefix/.masame-stamp" 2>/dev/null)" != "$sdl_stamp" ]]; then
   tarball="$build_dir/SDL3-$SDL3_VERSION.tar.gz"
   if [[ ! -f "$tarball" ]]; then
     curl -fL -o "$tarball" \
@@ -66,6 +77,10 @@ if [[ ! -f "$sdl_prefix/lib/pkgconfig/sdl3.pc" ]]; then
   echo "$SDL3_SHA256  $tarball" | sha256sum -c -
   rm -rf "$sdl_dir"
   tar -xzf "$tarball" -C "$build_dir"
+  for p in "${sdl_patches[@]}"; do
+    patch -d "$sdl_dir" -p1 < "$p"
+  done
+  rm -rf "$sdl_dir/build" "$sdl_prefix"
   cmake -S "$sdl_dir" -B "$sdl_dir/build" -GNinja \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_PREFIX="$sdl_prefix" \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DSDL_INSTALL=ON -DSDL_INSTALL_DOCS=OFF \
@@ -75,6 +90,7 @@ if [[ ! -f "$sdl_prefix/lib/pkgconfig/sdl3.pc" ]]; then
     -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_VENDOR_INFO=masame "${sdl_os_flags[@]}"
   cmake --build "$sdl_dir/build"
   cmake --install "$sdl_dir/build"
+  echo "$sdl_stamp" > "$sdl_prefix/.masame-stamp"
 fi
 
 meson_dir="$build_dir/meson"

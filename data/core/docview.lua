@@ -79,9 +79,9 @@ function DocView:try_close(do_close)
       "Unsaved Changes",
       i18n.f("Save changes to \"%s\" before closing?", self.doc:get_name()),
       {
-        { text = "Save", id = "save", default_yes = true },
         { text = "Don't Save", id = "discard" },
         { text = "Cancel", id = "cancel", default_no = true },
+        { text = "Save", id = "save", default_yes = true },
       },
       function(item)
         if item.id == "save" then

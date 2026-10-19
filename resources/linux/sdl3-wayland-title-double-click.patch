@@ -1,0 +1,27 @@
+--- a/src/video/wayland/SDL_waylandevents.c
++++ b/src/video/wayland/SDL_waylandevents.c
+@@ -739,6 +739,24 @@
+             input->buttons_pressed &= ~(SDL_BUTTON_MASK(sdl_button));
+         }
+ 
++        /* Masame: a double click on the draggable title area toggles
++           maximize, as it does with the desktop's own title bars. */
++        if (sdl_button == SDL_BUTTON_LEFT && state && window->sdlwindow->hit_test &&
++            window->hit_test_result == SDL_HITTEST_DRAGGABLE) {
++            static Uint64 last_title_press_ns = 0;
++            const Uint64 now = SDL_GetTicksNS();
++            if (last_title_press_ns && now - last_title_press_ns < SDL_MS_TO_NS(400)) {
++                last_title_press_ns = 0;
++                if (window->sdlwindow->flags & SDL_WINDOW_MAXIMIZED) {
++                    SDL_RestoreWindow(window->sdlwindow);
++                } else {
++                    SDL_MaximizeWindow(window->sdlwindow);
++                }
++                return;
++            }
++            last_title_press_ns = now;
++        }
++
+         if (sdl_button == SDL_BUTTON_LEFT &&
+             ProcessHitTest(input->pointer_focus, input->seat, input->sx_w, input->sy_w, serial)) {
+             return; // don't pass this event on to app.

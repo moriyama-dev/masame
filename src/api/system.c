@@ -67,16 +67,23 @@ typedef struct HitTestInfo HitTestInfo;
 
 static HitTestInfo window_hit_info[1] = {{0, 0, 0}};
 
-#define RESIZE_FROM_TOP 0
-#define RESIZE_FROM_RIGHT 0
+#define RESIZE_FROM_TOP 1
+#define RESIZE_FROM_RIGHT 1
 
 static SDL_HitTestResult SDLCALL hit_test(SDL_Window *window, const SDL_Point *pt, void *data) {
   const HitTestInfo *hit_info = (HitTestInfo *) data;
   const int resize_border = hit_info->resize_border;
   const int controls_width = hit_info->controls_width;
   int w, h;
+  SDL_Point scaled;
 
+  /* The hit info is in drawing pixels; SDL gives window coordinates. */
   SDL_GetWindowSize(window_renderer.window, &w, &h);
+  w = (int) (w * window_renderer.scale_x);
+  h = (int) (h * window_renderer.scale_y);
+  scaled.x = (int) (pt->x * window_renderer.scale_x);
+  scaled.y = (int) (pt->y * window_renderer.scale_y);
+  pt = &scaled;
 
   if (pt->y < hit_info->title_height &&
     #if RESIZE_FROM_TOP
@@ -613,6 +620,21 @@ static int f_set_window_size(lua_State *L) {
   SDL_SetWindowPosition(window_renderer.window, x, y);
   ren_resize_window(&window_renderer);
   return 0;
+}
+
+
+static int f_show_window_menu(lua_State *L) {
+  const float x = luaL_checknumber(L, 1) / window_renderer.scale_x;
+  const float y = luaL_checknumber(L, 2) / window_renderer.scale_y;
+  SDL_ShowWindowSystemMenu(window_renderer.window, (int) x, (int) y);
+  return 0;
+}
+
+
+static int f_get_video_driver(lua_State *L) {
+  const char *driver = SDL_GetCurrentVideoDriver();
+  lua_pushstring(L, driver ? driver : "");
+  return 1;
 }
 
 
@@ -1201,6 +1223,8 @@ static const luaL_Reg lib[] = {
   { "set_text_input_rect", f_set_text_input_rect },
   { "clear_ime",           f_clear_ime           },
   { "window_has_focus",    f_window_has_focus    },
+  { "show_window_menu",    f_show_window_menu    },
+  { "get_video_driver",    f_get_video_driver    },
   { "raise_window",        f_raise_window        },
   { "show_fatal_error",    f_show_fatal_error    },
   { "rmdir",               f_rmdir               },

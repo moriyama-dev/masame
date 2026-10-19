@@ -45,8 +45,8 @@ local function save(filename)
   else
     core.error(err)
     core.nag_view:show("Saving failed", i18n.f("Couldn't save file \"%s\". Do you want to save to another location?", doc().filename), {
-      { text = "Yes", default_yes = true },
-      { text = "No", default_no = true }
+      { text = "No", default_no = true },
+      { text = "Yes", default_yes = true }
     }, function(item)
       if item.text == "Yes" then
         core.add_thread(function()

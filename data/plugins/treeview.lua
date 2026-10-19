@@ -690,8 +690,8 @@ command.add(
     local file_type = file_info.type == "dir" and "Directory" or "File"
     -- Ask before deleting
     local opt = {
-      { text = "Yes", default_yes = true },
-      { text = "No", default_no = true }
+      { text = "No", default_no = true },
+      { text = "Yes", default_yes = true }
     }
     core.nag_view:show(
       string.format("Delete %s", file_type),

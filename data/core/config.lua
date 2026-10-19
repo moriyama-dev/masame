@@ -50,7 +50,9 @@ config.animation_rate = 1.0
 config.blink_period = 0.8
 config.disable_blink = false
 config.draw_whitespace = false
-config.borderless = false
+-- On Wayland the window frame would otherwise come from a generic fallback
+-- that doesn't match the desktop, so Masame draws its own title bar there.
+config.borderless = system.get_video_driver() == "wayland"
 config.tab_close_button = true
 config.max_clicks = 3
 

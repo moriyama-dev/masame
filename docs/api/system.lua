@@ -116,6 +116,21 @@ function system.set_window_bordered(bordered) end
 function system.set_window_hit_test(title_height, controls_width, resize_border) end
 
 ---
+---Show the desktop's window menu (move, resize, always on top, ...) at the
+---given position, as a right click on a title bar does.
+---
+---@param x number
+---@param y number
+function system.show_window_menu(x, y) end
+
+---
+---Get the name of the video driver in use ("wayland", "x11", "windows",
+---"cocoa", ...).
+---
+---@return string driver
+function system.get_video_driver() end
+
+---
 ---Get the size and coordinates of the window.
 ---
 ---@return number width
