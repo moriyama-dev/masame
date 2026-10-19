@@ -4,20 +4,25 @@
 #include "renwindow.h"
 
 #ifdef LITE_USE_SDL_RENDERER
+#include <math.h>
+
 static int query_surface_scale(RenWindow *ren) {
-  int w_pixels, h_pixels;
-  int w_points, h_points;
-  SDL_GetWindowSizeInPixels(ren->window, &w_pixels, &h_pixels);
-  SDL_GetWindowSize(ren->window, &w_points, &h_points);
-  /* We consider that the ratio pixel/point will always be an integer and
-     it is the same along the x and the y axis. */
-  assert(w_pixels % w_points == 0 && h_pixels % h_points == 0 && w_pixels / w_points == h_pixels / h_points);
-  return w_pixels / w_points;
+  /* The renderer draws at an integer scale. With a fractional display scale
+     (e.g. 125% or 150%) we draw at the next integer and let the SDL
+     renderer shrink the result to the window's pixel size. */
+  const float density = SDL_GetWindowPixelDensity(ren->window);
+  const int scale = (int) ceilf(density - 0.01f);
+  return scale < 1 ? 1 : scale;
+}
+
+static void query_surface_size(RenWindow *ren, int scale, int *w, int *h) {
+  SDL_GetWindowSize(ren->window, w, h);
+  *w *= scale;
+  *h *= scale;
 }
 
 static void setup_renderer(RenWindow *ren, int w, int h) {
-  /* Note that w and h here should always be in pixels and obtained from
-     a call to SDL_GetWindowSizeInPixels(). */
+  /* Note that w and h here are the size of the drawing surface. */
   if (!ren->renderer) {
     ren->renderer = SDL_CreateRenderer(ren->window, NULL);
   }
@@ -25,6 +30,7 @@ static void setup_renderer(RenWindow *ren, int w, int h) {
     SDL_DestroyTexture(ren->texture);
   }
   ren->texture = SDL_CreateTexture(ren->renderer, ren->rensurface.surface->format, SDL_TEXTUREACCESS_STREAMING, w, h);
+  SDL_SetTextureScaleMode(ren->texture, SDL_SCALEMODE_LINEAR);
   ren->rensurface.scale = query_surface_scale(ren);
 }
 #endif
@@ -37,7 +43,7 @@ void renwin_init_surface(RenWindow *ren) {
     SDL_DestroySurface(ren->rensurface.surface);
   }
   int w, h;
-  SDL_GetWindowSizeInPixels(ren->window, &w, &h);
+  query_surface_size(ren, query_surface_scale(ren), &w, &h);
   SDL_PixelFormat format = SDL_GetWindowPixelFormat(ren->window);
   ren->rensurface.surface = SDL_CreateSurface(w, h, format == SDL_PIXELFORMAT_UNKNOWN ? SDL_PIXELFORMAT_BGRA32 : format);
   if (!ren->rensurface.surface) {
@@ -88,9 +94,10 @@ RenSurface renwin_get_surface(RenWindow *ren) {
 void renwin_resize_surface(RenWindow *ren) {
 #ifdef LITE_USE_SDL_RENDERER
   int new_w, new_h, new_scale;
-  SDL_GetWindowSizeInPixels(ren->window, &new_w, &new_h);
   new_scale = query_surface_scale(ren);
-  /* Note that (w, h) may differ from (new_w, new_h) on retina displays. */
+  query_surface_size(ren, new_scale, &new_w, &new_h);
+  /* Note that the surface size may differ from the window size in points
+     on high pixel density displays. */
   if (new_scale != ren->rensurface.scale ||
       new_w != ren->rensurface.surface->w ||
       new_h != ren->rensurface.surface->h) {

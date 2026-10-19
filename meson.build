@@ -1,6 +1,6 @@
 project('masame',
     ['c'],
-    version : '0.2.0',
+    version : '0.2.1',
     license : 'MIT',
     meson_version : '>= 0.56',
     default_options : [
@@ -47,8 +47,9 @@ lite_cargs = [
     '-DPCRE2_STATIC',
     '-DLITE_PROJECT_VERSION_STR="@0@"'.format(version)
 ]
-# On macOS the SDL renderer is used to support Retina displays
-if get_option('renderer') or host_machine.system() == 'darwin'
+# On macOS and Linux the SDL renderer is used to support high pixel density
+# displays (Retina, and Wayland with a different scale on each monitor)
+if get_option('renderer') or host_machine.system() in ['darwin', 'linux']
     lite_cargs += '-DLITE_USE_SDL_RENDERER'
 endif
 if get_option('arch_tuple') != ''

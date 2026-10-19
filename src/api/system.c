@@ -488,7 +488,16 @@ top:
     case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
     case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
       {
+        /* The window moved to a monitor with another scale: the size in
+           points stays the same, but everything must be drawn again. */
         ren_resize_window(&window_renderer);
+        rencache_invalidate();
+        int w, h;
+        SDL_GetWindowSize(window_renderer.window, &w, &h);
+        lua_pushstring(L, "resized");
+        lua_pushinteger(L, w);
+        lua_pushinteger(L, h);
+        return 3;
       }
 
     default:

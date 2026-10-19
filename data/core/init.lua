@@ -764,6 +764,14 @@ function core.init()
     core.root_view:open_doc(core.open_doc(filename))
   end
 
+  -- Start with a new document rather than the start screen. This runs in a
+  -- thread so that it comes after the workspace has been restored.
+  core.add_thread(function()
+    if #core.docs == 0 then
+      command.perform("core:new-doc")
+    end
+  end)
+
   if not plugins_success or got_user_error then
     -- defer LogView to after everything is initialized,
     -- so that EmptyView won't be added after LogView.

@@ -23,6 +23,26 @@ local tooltip_alpha = 255
 local tooltip_alpha_rate = 1
 
 
+-- Whether the side bar is shown is remembered across restarts in this file.
+local state_file = USERDIR .. PATHSEP .. "sidebar_state.lua"
+
+local function load_visible()
+  local ok, t = pcall(dofile, state_file)
+  if ok and type(t) == "table" and type(t.visible) == "boolean" then
+    return t.visible
+  end
+  return true
+end
+
+local function save_visible(visible)
+  local fp = io.open(state_file, "w")
+  if fp then
+    fp:write("return {visible=", tostring(visible), "}\n")
+    fp:close()
+  end
+end
+
+
 local function get_depth(filename)
   local n = 1
   for _ in filename:gmatch(PATHSEP) do
@@ -44,7 +64,7 @@ function TreeView:__tostring() return "TreeView" end
 function TreeView:new()
   TreeView.super.new(self)
   self.scrollable = true
-  self.visible = true
+  self.visible = load_visible()
   self.init_size = true
   self.target_size = config.plugins.treeview.size
   self.cache = {}
@@ -551,6 +571,7 @@ local previous_view = nil
 command.add(nil, {
   ["treeview:toggle"] = function()
     view.visible = not view.visible
+    save_visible(view.visible)
   end,
 
   ["treeview:toggle-focus"] = function()
