@@ -6,7 +6,9 @@ Masame is a lightweight, fast text editor for Linux, Windows and macOS.
 It keeps a familiar, minimal interface and leaves out features you do not need.
 
 - Menu bar, side bar, tabs, minimap, multiple cursors, find in files, split views
-- Interface in English or Japanese: **Preferences → English / 日本語** (applied immediately)
+- Interface in 17 languages, chosen from the system or in **Preferences** (applied immediately):
+  English, Japanese, Chinese (Simplified and Traditional), Korean, Spanish, French, German,
+  Italian, Portuguese (Brazil), Dutch, Polish, Russian, Ukrainian, Turkish, Vietnamese, Indonesian
 - System dialogs for Open File, Open Folder and Save As
 - Auto save: **File → Auto Save** saves a file a second after you stop typing
 - Remembers your choices: word wrap, zoom, auto save and the bars shown in the
@@ -51,9 +53,10 @@ sudo apt install masame
 Updates then come with `sudo apt upgrade`. The `.deb` and a portable `.tar.gz`
 are also on the [Releases](https://github.com/moriyama-dev/masame/releases) page.
 
-Japanese text is drawn with a system font (Noto Sans CJK on Linux, Yu Gothic or
-Meiryo on Windows, Hiragino Sans on macOS). On Linux, if it shows as boxes,
-install `fonts-noto-cjk`.
+Chinese, Japanese and Korean text is drawn with system fonts (Noto Sans CJK on
+Linux; Yu Gothic, Malgun Gothic, Microsoft YaHei and JhengHei on Windows;
+Hiragino, Apple SD Gothic Neo and PingFang on macOS). On Linux, if it shows as
+boxes, install `fonts-noto-cjk`.
 
 ## Settings
 
@@ -115,7 +118,8 @@ Masame（柾目）は、Linux、Windows、Mac で使える、軽くて速いテ�
 名前の柾目は、まっすぐにそろった木目のことです。
 
 - メニューバー、サイドバー、タブ、ミニマップ、複数カーソル、フォルダー内の検索、画面の分割
-- 表示は英語と日本語を切り替えられます：**設定 → English / 日本語**（すぐに反映されます）
+- 表示は17言語に対応しています。OS の言語に合わせて選ばれ、**設定** メニューで切り替えられます（すぐに反映されます）：
+  英語、日本語、中国語（簡体字・繁体字）、韓国語、スペイン語、フランス語、ドイツ語、イタリア語、ポルトガル語（ブラジル）、オランダ語、ポーランド語、ロシア語、ウクライナ語、トルコ語、ベトナム語、インドネシア語
 - ファイルを開く／フォルダーを開く／名前を付けて保存は、OS 標準のダイアログを使います
 - 自動保存：**ファイル → 自動保存** をオンにすると、入力が止まって1秒後に保存します
 - 選んだ設定を覚えます：折り返し、拡大率、自動保存、**表示** メニューのバーなどは次に起動しても同じままで、開いていたファイルも開き直します
@@ -128,7 +132,7 @@ Masame（柾目）は、Linux、Windows、Mac で使える、軽くて速いテ�
 - **Mac**（macOS 11 以降、Apple シリコンと Intel）：Homebrew で `brew tap moriyama-dev/masame https://github.com/moriyama-dev/masame` のあと `brew install --cask masame`。更新は `brew upgrade` です。.dmg から入れた場合は、初回だけ「システム設定 → プライバシーとセキュリティ」で「このまま開く」を押してください。
 - **Linux**（Ubuntu 24.04 以降、x64）：上の [Linux](#linux-ubuntu--debian) の手順で apt に登録します。更新は `sudo apt upgrade` です。
 
-日本語は OS のフォントで表示します（Linux は Noto Sans CJK、Windows は游ゴシックかメイリオ、Mac はヒラギノ角ゴシック）。Linux で文字が □ になるときは `fonts-noto-cjk` を入れてください。
+日本語・中国語・韓国語は OS のフォントで表示します（Linux は Noto Sans CJK、Windows は游ゴシック・Malgun Gothic・Microsoft YaHei・JhengHei、Mac はヒラギノ・Apple SD Gothic Neo・PingFang）。Linux で文字が □ になるときは `fonts-noto-cjk` を入れてください。
 
 ### 設定
 

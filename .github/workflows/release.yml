@@ -29,6 +29,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Check the translations
+        run: python3 scripts/check-locales.py
+
       - id: version
         env:
           REF_TYPE: ${{ github.ref_type }}

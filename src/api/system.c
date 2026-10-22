@@ -179,7 +179,8 @@ static void push_win32_error(lua_State *L, DWORD rc) {
 
 
 
-/* system.get_preferred_language() -> language code such as "ja", or nil */
+/* system.get_preferred_language() -> language code such as "ja", or nil,
+   and the country code such as "TW" when known */
 static int f_get_preferred_language(lua_State *L) {
   int count = 0;
   SDL_Locale **locales = SDL_GetPreferredLocales(&count);
@@ -189,8 +190,10 @@ static int f_get_preferred_language(lua_State *L) {
     return 1;
   }
   lua_pushstring(L, locales[0]->language);
+  if (locales[0]->country) lua_pushstring(L, locales[0]->country);
+  else lua_pushnil(L);
   SDL_free(locales);
-  return 1;
+  return 2;
 }
 
 /* Native file dialogs. The result arrives later as a "dialogfinished" event
