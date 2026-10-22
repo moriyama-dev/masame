@@ -45,6 +45,16 @@ local function colors()
   }
 end
 
+-- the detail paragraph: between the text and the background
+local function detail_color(c)
+  if style.dialog_detail then return style.dialog_detail end
+  local t, b = c.text, c.background
+  local mix = {}
+  for i = 1, 3 do mix[i] = math.floor(t[i] * 0.65 + b[i] * 0.35) end
+  mix[4] = t[4] or 255
+  return mix
+end
+
 local function fade(color, progress)
   return { color[1], color[2], color[3], (color[4] or 255) * progress }
 end
@@ -94,20 +104,23 @@ function NagView:get_layout()
   end
   local max_w = math.max(rw - 4 * style.padding.x, bw)
   local text_w = 0
-  for line in self.message:gmatch("([^\n]*)") do
+  for line in (self.message .. "\n" .. (self.detail or "")):gmatch("([^\n]*)") do
     text_w = math.max(text_w, style.font:get_width(line))
   end
   local w = math.max(bw * #self.options, common.round(480 * SCALE), icon_w + text_w + 3 * pad)
   w = math.min(w, max_w)
 
   local lines = wrap_message(self.message, w - icon_w - 3 * pad)
-  local text_h = #lines * line_height()
+  local detail_lines = self.detail and wrap_message(self.detail, w - icon_w - 3 * pad) or {}
+  local detail_gap = #detail_lines > 0 and math.floor(line_height() / 2) or 0
+  local text_h = (#lines + #detail_lines) * line_height() + detail_gap
   local body_h = math.max(text_h, style.icon_big_font:get_height()) + 2 * pad
   local h = math.min(body_h + bh, rh)
   local x = core.root_view.position.x + math.floor((rw - w) / 2)
   local y = core.root_view.position.y + math.floor((rh - h) / 2)
   return {
     x = x, y = y, w = w, h = h, pad = pad, icon_w = icon_w, lines = lines,
+    detail_lines = detail_lines, detail_gap = detail_gap,
     text_h = text_h, body_h = h - bh, bh = bh,
   }
 end
@@ -227,6 +240,7 @@ function NagView:update()
     if self.show_progress <= 0 then
       self.title = nil
       self.message = nil
+      self.detail = nil
       self.options = nil
       self.on_selected = nil
       self.mouse_item = nil
@@ -257,6 +271,10 @@ local function draw_nagview_message(self)
   local lh = line_height()
   for i, line in ipairs(l.lines) do
     common.draw_text(style.font, fade(c.text, p), line, nil, tx, ty + (i - 1) * lh, 0, lh)
+  end
+  ty = ty + #l.lines * lh + l.detail_gap
+  for i, line in ipairs(l.detail_lines) do
+    common.draw_text(style.font, fade(detail_color(c), p), line, nil, tx, ty + (i - 1) * lh, 0, lh)
   end
   if #self.queue > 0 then
     local str = string.format("[%d]", #self.queue + 1)
@@ -304,6 +322,7 @@ function NagView:next()
     self.visible = true
     self.title = i18n.t(opts.title)
     self.message = i18n.t(opts.message)
+    self.detail = opts.detail and i18n.t(opts.detail)
     self.options = opts.options
     self.on_selected = opts.on_selected
     self.mouse_item = nil
@@ -321,8 +340,10 @@ function NagView:next()
   end
 end
 
-function NagView:show(title, message, options, on_select)
+---@param extra? { detail: string? } a dimmer second paragraph under the message
+function NagView:show(title, message, options, on_select, extra)
   local opts = {}
+  opts.detail = extra and extra.detail
   opts.title = assert(title, "No title")
   opts.message = assert(message, "No message")
   opts.options = assert(options, "No options")

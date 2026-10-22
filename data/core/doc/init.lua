@@ -118,7 +118,7 @@ end
 
 
 function Doc:get_name()
-  return self.filename or require("core.i18n").t("untitled")
+  return self.filename or require("core.i18n").t("Untitled")
 end
 
 

@@ -8,6 +8,9 @@ It keeps a familiar, minimal interface and leaves out features you do not need.
 - Menu bar, side bar, tabs, minimap, multiple cursors, find in files, split views
 - Interface in English or Japanese: **Preferences → English / 日本語** (applied immediately)
 - System dialogs for Open File, Open Folder and Save As
+- Auto save: **File → Auto Save** saves a file a second after you stop typing
+- Remembers your choices: word wrap, zoom, auto save and the bars shown in the
+  **View** menu stay as you left them, and the files you had open come back
 - No command palette, no build system, no project features
 - Small native program (C + Lua, rendered with SDL3)
 
@@ -65,6 +68,9 @@ config.indent_size = 2
 config.plugins.minimap.enabled = false
 ```
 
+Choices made from the menus are stored in `preferences.lua` in the same
+folder and take precedence over `init.lua`.
+
 ## Building
 
 ```sh
@@ -111,6 +117,8 @@ Masame（柾目）は、Linux、Windows、Mac で使える、軽くて速いテ�
 - メニューバー、サイドバー、タブ、ミニマップ、複数カーソル、フォルダー内の検索、画面の分割
 - 表示は英語と日本語を切り替えられます：**設定 → English / 日本語**（すぐに反映されます）
 - ファイルを開く／フォルダーを開く／名前を付けて保存は、OS 標準のダイアログを使います
+- 自動保存：**ファイル → 自動保存** をオンにすると、入力が止まって1秒後に保存します
+- 選んだ設定を覚えます：折り返し、拡大率、自動保存、**表示** メニューのバーなどは次に起動しても同じままで、開いていたファイルも開き直します
 - コマンドパレット、ビルド、プロジェクトの機能はありません
 - 小さなネイティブのプログラム（C と Lua、描画は SDL3）
 
@@ -125,6 +133,7 @@ Masame（柾目）は、Linux、Windows、Mac で使える、軽くて速いテ�
 ### 設定
 
 **設定 → 設定ファイル** で `~/.config/masame/init.lua` が開きます。保存すると反映されます。
+メニューで選んだ設定は同じフォルダーの `preferences.lua` に記録され、`init.lua` より優先されます。
 
 ### ライセンス
 

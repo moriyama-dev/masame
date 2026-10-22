@@ -39,6 +39,7 @@ command.add(nil, {
 
   ["core:toggle-fullscreen"] = function()
     fullscreen = not fullscreen
+    core.fullscreen = fullscreen
     if fullscreen then
       restore_title_view = core.title_view.visible
     end

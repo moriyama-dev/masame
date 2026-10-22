@@ -2,6 +2,7 @@
 local core = require "core"
 local common = require "core.common"
 local DocView = require "core.docview"
+local CommandView = require "core.commandview"
 local Doc = require "core.doc"
 local style = require "core.style"
 local config = require "core.config"
@@ -584,11 +585,20 @@ command.add(nil, {
       LineWrapping.reconstruct_breaks(core.active_view, core.active_view:get_font(), math.huge)
     end
   end,
+  -- Word wrap is one setting for every document, like the other choices in
+  -- the View menu.
   ["line-wrapping:toggle"] = function()
-    if core.active_view and core.active_view.doc and core.active_view.wrapped_settings then
-      command.perform("line-wrapping:disable")
-    else
-      command.perform("line-wrapping:enable")
+    local enabled = not config.plugins.linewrapping.enable_by_default
+    config.plugins.linewrapping.enable_by_default = enabled
+    for _, view in ipairs(core.root_view.root_node:get_children()) do
+      if view:extends(DocView) and not view:extends(CommandView) then
+        view.wrapping_enabled = enabled
+        if enabled then
+          LineWrapping.update_docview_breaks(view)
+        else
+          LineWrapping.reconstruct_breaks(view, view:get_font(), math.huge)
+        end
+      end
     end
   end
 })

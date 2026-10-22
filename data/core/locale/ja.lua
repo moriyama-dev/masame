@@ -19,6 +19,7 @@ return {
   ["Save"] = "保存",
   ["Save As..."] = "名前を付けて保存...",
   ["Save All"] = "すべて保存",
+  ["Auto Save"] = "自動保存",
   ["Reload from Disk"] = "ディスクから再読み込み",
   ["Close File"] = "ファイルを閉じる",
   ["Close Other Files"] = "ほかのファイルを閉じる",
@@ -110,7 +111,7 @@ return {
   ["%s to go to a file in the folder"] = "%s でフォルダー内のファイルへ移動",
 
   -- Tabs and status bar
-  ["untitled"] = "無題",
+  ["Untitled"] = "無題",
   ["tabs: "] = "タブ: ",
   ["spaces: "] = "スペース: ",
   [" lines"] = " 行",
@@ -158,8 +159,10 @@ return {
   ["Continue"] = "続ける",
   ["Unsaved Changes"] = "保存されていない変更",
   ["Save changes to \"%s\" before closing?"] = "閉じる前に「%s」の変更を保存しますか？",
-  ["\"%s\" has unsaved changes. Quit anyway?"] = "「%s」に保存されていない変更があります。終了しますか？",
-  ["%d docs have unsaved changes. Quit anyway?"] = "%d 個のファイルに保存されていない変更があります。終了しますか？",
+  ["Save changes to the following %d files before closing?"] = "次の %d 個のファイルの変更を保存しますか？",
+  ["and %d more"] = "ほか %d 個",
+  ["Your changes will be lost if you don't save them."] = "保存しないと、変更は失われます。",
+  ["Close Without Saving"] = "保存しないで閉じる",
   ["Saving failed"] = "保存できませんでした",
   ["Couldn't save file \"%s\". Do you want to save to another location?"] =
     "「%s」を保存できませんでした。別の場所に保存しますか？",
@@ -176,6 +179,7 @@ return {
   -- Messages
   ["Opening folder %q in %s"] = "フォルダー %q を開きました（%s）",
   ["Saved \"%s\""] = "「%s」を保存しました",
+  ["Couldn't save file \"%s\": %s"] = "「%s」を保存できませんでした: %s",
   ["Renamed \"%s\" to \"%s\""] = "「%s」を「%s」に名前変更しました",
   ["Removed \"%s\""] = "「%s」を削除しました",
   ["Deleted \"%s\""] = "「%s」を削除しました",

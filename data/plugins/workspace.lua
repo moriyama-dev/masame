@@ -77,6 +77,9 @@ end
 local function save_view(view)
   local mt = getmetatable(view)
   if mt == DocView then
+    -- new files that were never saved are not brought back; leaving them
+    -- unsaved was confirmed when quitting
+    if not view.doc.filename then return end
     return {
       type = "doc",
       active = (core.active_view == view),
@@ -84,7 +87,6 @@ local function save_view(view)
       selection = { view.doc:get_selection() },
       scroll = { x = view.scroll.to.x, y = view.scroll.to.y },
       crlf = view.doc.crlf,
-      text = view.doc.new_file and view.doc:get_text(1, 1, math.huge, math.huge)
     }
   end
   if mt == LogView then return end

@@ -670,6 +670,7 @@ function core.init()
   core.cursor_clipboard = {}
   core.cursor_clipboard_whole_line = {}
   core.window_mode = "normal"
+  core.fullscreen = false
   core.threads = setmetatable({}, { __mode = "k" })
   core.blink_start = system.get_time()
   core.blink_timer = core.blink_start
@@ -745,6 +746,7 @@ function core.init()
 
   -- Load core plugins after user ones to let the user override them
   local plugins_success, plugins_refuse_list = core.load_plugins()
+  require("core.preferences").init()
 
   do
     local pdir, pname = project_dir_abs:match("(.*)[/\\\\](.*)")
@@ -808,33 +810,63 @@ function core.init()
 end
 
 
+-- Before docs are closed, asks whether to save the ones with unsaved changes,
+-- then calls close_fn(...) unless the user cancels. With auto save on, files
+-- are saved without asking; only new files that were never saved remain.
 function core.confirm_close_docs(docs, close_fn, ...)
-  local dirty_count = 0
-  local dirty_name
+  local args = table.pack(...)
+  local function close() close_fn(table.unpack(args, 1, args.n)) end
+
+  local autosave = package.loaded["plugins.autosave"]
+  local dirty = {}
   for _, doc in ipairs(docs or core.docs) do
-    if doc:is_dirty() then
-      dirty_count = dirty_count + 1
-      dirty_name = doc:get_name()
+    if doc:is_dirty() and not (autosave and autosave.covers(doc) and autosave.save(doc)) then
+      table.insert(dirty, doc)
     end
   end
-  if dirty_count > 0 then
-    local text
-    if dirty_count == 1 then
-      text = require("core.i18n").f("\"%s\" has unsaved changes. Quit anyway?", dirty_name)
-    else
-      text = require("core.i18n").f("%d docs have unsaved changes. Quit anyway?", dirty_count)
-    end
-    local args = {...}
-    local opt = {
-      { text = "No", default_no = true },
-      { text = "Yes", default_yes = true }
+  if #dirty == 0 then return close() end
+
+  local i18n = require "core.i18n"
+  local function name(doc) return doc:get_name():match("[^/\\]*$") end
+  local message, options
+  if #dirty == 1 then
+    message = i18n.f("Save changes to \"%s\" before closing?", name(dirty[1]))
+    options = {
+      { text = "Close Without Saving", id = "discard" },
+      { text = "Cancel", id = "cancel", default_no = true },
+      { text = "Save", id = "save", default_yes = true },
     }
-    core.nag_view:show("Unsaved Changes", text, opt, function(item)
-      if item.text == "Yes" then close_fn(table.unpack(args)) end
-    end)
   else
-    close_fn(...)
+    local names = {}
+    local shown = math.min(#dirty, #dirty > 8 and 7 or 8)
+    for i = 1, shown do names[i] = name(dirty[i]) end
+    if shown < #dirty then
+      table.insert(names, i18n.f("and %d more", #dirty - shown))
+    end
+    message = i18n.f("Save changes to the following %d files before closing?", #dirty)
+      .. "\n\n" .. table.concat(names, "\n")
+    options = {
+      { text = "Don't Save", id = "discard" },
+      { text = "Cancel", id = "cancel", default_no = true },
+      { text = "Save All", id = "save", default_yes = true },
+    }
   end
+
+  core.nag_view:show("Unsaved Changes", message, options, function(item)
+    if item.id == "discard" then
+      close()
+    elseif item.id == "save" then
+      -- one after another, as new files ask where to save; stop on cancel
+      local i = 0
+      local function save_next(ok)
+        if ok == false then return end
+        i = i + 1
+        if i > #dirty then return close() end
+        core.save_doc(dirty[i], save_next)
+      end
+      save_next()
+    end
+  end, { detail = "Your changes will be lost if you don't save them." })
 end
 
 local temp_uid = math.floor(system.get_time() * 1000) % 0xffffffff

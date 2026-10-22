@@ -6,6 +6,7 @@ local config = require "core.config"
 local keymap = require "core.keymap"
 local style = require "core.style"
 local CommandView = require "core.commandview"
+local preferences = require "core.preferences"
 
 config.plugins.scale = common.merge({
   -- The method used to apply the scaling: "code", "ui"
@@ -74,6 +75,8 @@ local function set_scale(scale)
   end
 
   core.redraw = true
+  -- remembered as a ratio to the default, which depends on the monitor
+  preferences.set("zoom", math.floor(current_scale / default_scale * 10000 + 0.5) / 10000)
 end
 
 local function get_scale()
@@ -95,6 +98,13 @@ end
 if default_scale ~= config.plugins.scale.default_scale then
   if type(config.plugins.scale.default_scale) == "number" then
     set_scale(config.plugins.scale.default_scale)
+  end
+end
+
+do
+  local zoom = preferences.get("zoom")
+  if type(zoom) == "number" and zoom ~= current_scale / default_scale then
+    set_scale(default_scale * zoom)
   end
 end
 

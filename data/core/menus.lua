@@ -8,9 +8,20 @@ local MenuBar = require "core.menubar"
 local RootView = require "core.rootview"
 local DocView = require "core.docview"
 
+local preferences = require "core.preferences"
+
 local T = i18n.t
 local D = MenuBar.DIVIDER
 local menubar = core.menu_bar
+
+-- A menu item for an on/off choice; it shows a check mark when on.
+local function toggle_item(text, key)
+  local cmd
+  for _, t in ipairs(preferences.toggles) do
+    if t.key == key then cmd = t.command end
+  end
+  return { text = text, command = cmd, checked = function() return preferences.state(key) end }
+end
 
 local function lang_item(lang)
   return {
@@ -111,22 +122,45 @@ use_dialog("core:open-folder", function(fallback)
   end)
 end)
 
-use_dialog("doc:save-as", function(fallback, dv)
-  local doc = dv.doc
-  local location = doc.abs_filename or (active_dir() .. PATHSEP)
-  filedialog.save_file(location, function(paths, err)
-    if not paths then return fallback(err) end
-    local path = paths[1]
-    if not path then return end
-    local filename = core.normalize_to_project_dir(path)
-    local ok, save_err = pcall(doc.save, doc, filename, core.project_absolute_path(filename))
+-- Saves `doc`, asking where when it has no file yet (or when `ask_location`
+-- is set). Calls on_done(true) once it is saved, and on_done(false) when the
+-- dialog is cancelled or saving fails.
+local path_prompt_save_as = command.map["doc:save-as"].perform
+
+function core.save_doc(doc, on_done, ask_location)
+  on_done = on_done or function() end
+  local function write(filename, abs_filename)
+    local ok, err = pcall(doc.save, doc, filename, abs_filename)
     if ok then
       core.log("Saved \"%s\"", doc.filename)
     else
-      core.error("%s", tostring(save_err))
+      core.error("%s", tostring(err))
     end
+    on_done(ok)
+  end
+  if doc.filename and not ask_location then return write() end
+  local location = doc.abs_filename or (active_dir() .. PATHSEP)
+  filedialog.save_file(location, function(paths, err)
+    if not paths then
+      -- the path prompt cannot tell when it is done, so stop here
+      core.log_quiet("File dialog unavailable: %s", tostring(err))
+      local view = core.get_views_referencing_doc(doc)[1]
+      if view then
+        core.set_active_view(view)
+        path_prompt_save_as(view)
+      end
+      return on_done(false)
+    end
+    local path = paths[1]
+    if not path then return on_done(false) end
+    local filename = core.normalize_to_project_dir(path)
+    write(filename, core.project_absolute_path(filename))
   end)
-end)
+end
+
+command.map["doc:save-as"].perform = function(dv)
+  core.save_doc(dv.doc, nil, true)
+end
 
 command.add("core.docview!", {
   ["doc:sort-lines"] = function(dv)
@@ -179,6 +213,7 @@ menubar:add_menu("File", {
   { text = "Save", command = "doc:save" },
   { text = "Save As...", command = "doc:save-as" },
   { text = "Save All", command = "core:save-all" },
+  toggle_item("Auto Save", "auto_save"),
   D,
   { text = "Reload from Disk", command = "doc:reload" },
   D,
@@ -237,15 +272,18 @@ menubar:add_menu("Find", {
 })
 
 menubar:add_menu("View", {
-  { text = "Side Bar", command = "treeview:toggle" },
-  { text = "Toolbar", command = "toolbar:toggle" },
-  { text = "Status Bar", command = "status-bar:toggle" },
-  { text = "Minimap", command = "minimap:toggle-visibility" },
-  { text = "Menu Bar", command = "menubar:toggle" },
+  { text = "Side Bar", command = "treeview:toggle", checked = function()
+      local treeview = package.loaded["plugins.treeview"]
+      return treeview and treeview.visible
+    end },
+  toggle_item("Toolbar", "toolbar"),
+  toggle_item("Status Bar", "status_bar"),
+  toggle_item("Minimap", "minimap"),
+  toggle_item("Menu Bar", "menu_bar"),
   D,
-  { text = "Word Wrap", command = "line-wrapping:toggle" },
-  { text = "Show Whitespace", command = "draw-whitespace:toggle" },
-  { text = "Line Guide", command = "lineguide:toggle" },
+  toggle_item("Word Wrap", "word_wrap"),
+  toggle_item("Show Whitespace", "show_whitespace"),
+  toggle_item("Line Guide", "line_guide"),
   D,
   { text = "Split Right", command = "root:split-right" },
   { text = "Split Down", command = "root:split-down" },
@@ -254,7 +292,7 @@ menubar:add_menu("View", {
   { text = "Zoom Out", command = "scale:decrease" },
   { text = "Reset Zoom", command = "scale:reset" },
   D,
-  { text = "Full Screen", command = "core:toggle-fullscreen" },
+  toggle_item("Full Screen", "fullscreen"),
 })
 
 menubar:add_menu("Goto", {

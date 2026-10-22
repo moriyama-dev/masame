@@ -74,29 +74,7 @@ end
 function DocView:try_close(do_close)
   if self.doc:is_dirty()
   and #core.get_views_referencing_doc(self.doc) == 1 then
-    local i18n = require "core.i18n"
-    core.nag_view:show(
-      "Unsaved Changes",
-      i18n.f("Save changes to \"%s\" before closing?", self.doc:get_name()),
-      {
-        { text = "Don't Save", id = "discard" },
-        { text = "Cancel", id = "cancel", default_no = true },
-        { text = "Save", id = "save", default_yes = true },
-      },
-      function(item)
-        if item.id == "save" then
-          if self.doc.filename then
-            self.doc:save()
-            do_close()
-          else
-            core.set_active_view(self)
-            require("core.command").perform("doc:save-as")
-          end
-        elseif item.id == "discard" then
-          do_close()
-        end
-      end
-    )
+    core.confirm_close_docs({ self.doc }, do_close)
   else
     do_close()
   end
