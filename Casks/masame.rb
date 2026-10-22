@@ -2,8 +2,8 @@
 #   brew tap moriyama-dev/masame https://github.com/moriyama-dev/masame
 #   brew install --cask masame
 cask "masame" do
-  version "0.3.0"
-  sha256 "beefad1a8ccb9e20d705f3db5de3595f71bfeb69596c2cb155ebcb48c878c981"
+  version "0.4.0"
+  sha256 "0bc2cb8dc630976a3c0fb8eef86ec455889cf3c6a4ec328a8bacf9d1d9e03a37"
 
   url "https://github.com/moriyama-dev/masame/releases/download/#{version}/masame-#{version}-macos-universal.dmg"
   name "Masame"
