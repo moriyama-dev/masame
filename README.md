@@ -30,7 +30,7 @@ macOS 11 or later, Apple Silicon and Intel. With [Homebrew](https://brew.sh):
 
 ```sh
 brew tap moriyama-dev/masame https://github.com/moriyama-dev/masame
-brew install --cask masame
+brew install --cask moriyama-dev/masame/masame
 ```
 
 Updates then come with `brew upgrade`. You can also use the `.dmg` from
@@ -129,7 +129,7 @@ Masame（柾目）は、Linux、Windows、Mac で使える、軽くて速いテ�
 ### インストール
 
 - **Windows**（10/11、x64）：[Releases](https://github.com/moriyama-dev/masame/releases) から `masame-<版>-windows-x64-setup.exe`（インストーラー）か `.zip` をダウンロードします。署名がないため SmartScreen の警告が出たら、「詳細情報」→「実行」を選んでください。
-- **Mac**（macOS 11 以降、Apple シリコンと Intel）：Homebrew で `brew tap moriyama-dev/masame https://github.com/moriyama-dev/masame` のあと `brew install --cask masame`。更新は `brew upgrade` です。.dmg から入れた場合は、初回だけ「システム設定 → プライバシーとセキュリティ」で「このまま開く」を押してください。
+- **Mac**（macOS 11 以降、Apple シリコンと Intel）：Homebrew で `brew tap moriyama-dev/masame https://github.com/moriyama-dev/masame` のあと `brew install --cask moriyama-dev/masame/masame`。更新は `brew upgrade` です。.dmg から入れた場合は、初回だけ「システム設定 → プライバシーとセキュリティ」で「このまま開く」を押してください。
 - **Linux**（Ubuntu 24.04 以降、x64）：上の [Linux](#linux-ubuntu--debian) の手順で apt に登録します。更新は `sudo apt upgrade` です。
 
 日本語・中国語・韓国語は OS のフォントで表示します（Linux は Noto Sans CJK、Windows は游ゴシック・Malgun Gothic・Microsoft YaHei・JhengHei、Mac はヒラギノ・Apple SD Gothic Neo・PingFang）。Linux で文字が □ になるときは `fonts-noto-cjk` を入れてください。

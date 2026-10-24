@@ -1,6 +1,6 @@
 # Homebrew cask for Masame. Updated by the Release workflow.
 #   brew tap moriyama-dev/masame https://github.com/moriyama-dev/masame
-#   brew install --cask masame
+#   brew install --cask moriyama-dev/masame/masame
 cask "masame" do
   version "0.4.0"
   sha256 "0bc2cb8dc630976a3c0fb8eef86ec455889cf3c6a4ec328a8bacf9d1d9e03a37"
