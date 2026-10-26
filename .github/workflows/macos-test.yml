@@ -1,0 +1,52 @@
+name: macOS launch test
+
+# Run by hand before tagging a release: builds the .dmg the same way the Release workflow does
+# on GitHub's standard macOS runner and starts the app from it. Uses no secrets.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  launch:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install build dependencies
+        run: brew install bash meson ninja cmake pkgconf
+
+      - name: Build the packages
+        run: bash scripts/package-macos.sh
+
+      - name: Start the app from the .dmg
+        run: |
+          set -euo pipefail
+          mount="$( mktemp -d )"
+          hdiutil attach -nobrowse -readonly -mountpoint "${mount}" dist/*.dmg
+          app="$( find "${mount}" -maxdepth 1 -name '*.app' | head -1 )"
+          lipo -info "${app}/Contents/MacOS/masame"
+
+          userdir="$( mktemp -d )"
+          cp scripts/ci/macos-launch-test.lua "${userdir}/init.lua"
+          export LITE_USERDIR="${userdir}"
+          export MASAME_TEST_REPORT="${RUNNER_TEMP}/launch-report.txt"
+
+          "${app}/Contents/MacOS/masame" &
+          pid=$!
+          for _ in $( seq 1 60 ); do
+            if [[ -s "${MASAME_TEST_REPORT}" ]] || ! kill -0 "${pid}" 2>/dev/null; then break; fi
+            sleep 1
+          done
+          kill "${pid}" 2>/dev/null || true
+          hdiutil detach "${mount}" || true
+
+          cat "${MASAME_TEST_REPORT}"
+          grep -q '^started ' "${MASAME_TEST_REPORT}"
+          grep -q 'issues/new?body=Version' "${MASAME_TEST_REPORT}"
+          grep -q 'OS%3A%20macOS' "${MASAME_TEST_REPORT}"
+          grep -q '"https://github.com/moriyama-dev/masame"' "${MASAME_TEST_REPORT}"

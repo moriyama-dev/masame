@@ -43,6 +43,43 @@ for _, lang in ipairs(i18n.languages) do
 end
 command.add(nil, language_commands)
 
+local REPOSITORY = "https://github.com/moriyama-dev/masame"
+
+local function open_url(url)
+  if PLATFORM == "Windows" then
+    system.exec(string.format("start \"\" %q", url))
+  elseif PLATFORM == "Mac OS X" then
+    system.exec(string.format("open %q", url))
+  else
+    system.exec(string.format("xdg-open %q", url))
+  end
+end
+
+local function url_encode(text)
+  return (text:gsub("[^%w%-_%.~]", function(c) return string.format("%%%02X", c:byte()) end))
+end
+
+-- A short name and version of the operating system for bug reports
+local function os_description()
+  if PLATFORM == "Linux" then
+    local file = io.open("/etc/os-release", "r")
+    if file then
+      local text = file:read("*a")
+      file:close()
+      local name = text:match('PRETTY_NAME="([^"]*)"')
+      if name then return name end
+    end
+  elseif PLATFORM == "Mac OS X" then
+    local pipe = io.popen("sw_vers -productVersion 2>/dev/null")
+    if pipe then
+      local version = pipe:read("*l")
+      pipe:close()
+      if version then return "macOS " .. version end
+    end
+  end
+  return PLATFORM
+end
+
 command.add(nil, {
   ["core:new-window"] = function()
     system.exec(string.format("%q", EXEFILE))
@@ -60,20 +97,29 @@ command.add(nil, {
     core.nag_view:show(
       T("About Masame"),
       i18n.f("Masame %s\nA lightweight text editor. MIT License. Based on Lite XL.", VERSION),
-      { { text = "OK", default_yes = true, default_no = true } },
-      function() end
+      {
+        { text = "GitHub", command = "core:open-website" },
+        { text = "Report a Problem", command = "core:report-problem" },
+        { text = "OK", default_yes = true, default_no = true },
+      },
+      function(item)
+        if item.command then command.perform(item.command) end
+      end
     )
   end,
 
   ["core:open-website"] = function()
-    local url = "https://github.com/moriyama-dev/masame"
-    if PLATFORM == "Windows" then
-      system.exec(string.format("start \"\" %q", url))
-    elseif PLATFORM == "Mac OS X" then
-      system.exec(string.format("open %q", url))
-    else
-      system.exec(string.format("xdg-open %q", url))
-    end
+    open_url(REPOSITORY)
+  end,
+
+  -- Opens a new GitHub issue with the facts a bug report needs already filled in.
+  -- Nothing about the user or their files is included.
+  ["core:report-problem"] = function()
+    local body = string.format(
+      "Version: %s\nPlatform: %s %s\nOS: %s\nLanguage: %s\n\n",
+      VERSION, PLATFORM, ARCH, os_description(), i18n.lang or "en"
+    )
+    open_url(REPOSITORY .. "/issues/new?body=" .. url_encode(body))
   end,
 })
 
@@ -313,7 +359,8 @@ end
 menubar:add_menu("Preferences", preferences)
 
 menubar:add_menu("Help", {
-  { text = "Website", command = "core:open-website" },
+  { text = "GitHub", command = "core:open-website" },
+  { text = "Report a Problem", command = "core:report-problem" },
   { text = "About Masame", command = "core:about" },
 })
 

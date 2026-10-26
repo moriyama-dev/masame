@@ -87,7 +87,8 @@ return {
 
   -- Preferences / Help
   ["Settings"] = "Plik ustawień",
-  ["Website"] = "Witryna internetowa",
+  ["GitHub"] = "GitHub",
+  ["Report a Problem"] = "Zgłoś problem",
   ["About Masame"] = "O programie Masame",
   ["Masame %s\nA lightweight text editor. MIT License. Based on Lite XL."] =
     "Masame %s\nLekki edytor tekstu. Licencja MIT. Oparty na Lite XL.",
