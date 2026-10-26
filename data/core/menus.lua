@@ -80,6 +80,31 @@ local function os_description()
   return PLATFORM
 end
 
+-- Days since 1970-01-01 for a calendar date (proleptic Gregorian)
+local function days_from_civil(y, m, d)
+  if m <= 2 then y = y - 1 end
+  local era = (y >= 0 and y or y - 399) // 400
+  local yoe = y - era * 400
+  local doy = (153 * (m + (m > 2 and -3 or 9)) + 2) // 5 + d - 1
+  return era * 146097 + yoe * 365 + yoe // 4 - yoe // 100 + doy - 719468
+end
+
+local function nth_sunday(y, m, n)
+  local first = days_from_civil(y, m, 1)
+  return first + (7 - (first + 4) % 7) % 7 + 7 * (n - 1)
+end
+
+-- Reports are dated in Toronto time: daylight saving runs from 2:00 on the second Sunday
+-- of March to 2:00 on the first Sunday of November (07:00 and 06:00 UTC)
+local function toronto_time()
+  local now = os.time()
+  local year = os.date("!*t", now).year
+  local dst_start = nth_sunday(year, 3, 2) * 86400 + 7 * 3600
+  local dst_end = nth_sunday(year, 11, 1) * 86400 + 6 * 3600
+  local offset = (now >= dst_start and now < dst_end) and -4 or -5
+  return os.date("!%Y-%m-%d %H:%M", now + offset * 3600) .. " (America/Toronto)"
+end
+
 command.add(nil, {
   ["core:new-window"] = function()
     system.exec(string.format("%q", EXEFILE))
@@ -116,8 +141,8 @@ command.add(nil, {
   -- Nothing about the user or their files is included.
   ["core:report-problem"] = function()
     local body = string.format(
-      "Version: %s\nPlatform: %s %s\nOS: %s\nLanguage: %s\n\n",
-      VERSION, PLATFORM, ARCH, os_description(), i18n.lang or "en"
+      "Version: %s\nPlatform: %s %s\nOS: %s\nLanguage: %s\nTime: %s\n\n",
+      VERSION, PLATFORM, ARCH, os_description(), i18n.lang or "en", toronto_time()
     )
     open_url(REPOSITORY .. "/issues/new?body=" .. url_encode(body))
   end,

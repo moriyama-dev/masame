@@ -49,4 +49,5 @@ jobs:
           grep -q '^started ' "${MASAME_TEST_REPORT}"
           grep -q 'issues/new?body=Version' "${MASAME_TEST_REPORT}"
           grep -q 'OS%3A%20macOS' "${MASAME_TEST_REPORT}"
+          grep -q 'Time%3A%20[0-9]' "${MASAME_TEST_REPORT}"
           grep -q '"https://github.com/moriyama-dev/masame"' "${MASAME_TEST_REPORT}"
