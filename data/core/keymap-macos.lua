@@ -64,6 +64,8 @@ local function keymap_macos(keymap)
     ["cmd+delete"] = "doc:delete-to-end-of-line",
     ["return"] = { "command:submit", "doc:newline", "dialog:select" },
     ["keypad enter"] = { "command:submit", "doc:newline", "dialog:select" },
+    ["shift+return"] = { "command:submit", "doc:newline", "dialog:select" },
+    ["shift+keypad enter"] = { "command:submit", "doc:newline", "dialog:select" },
     ["cmd+return"] = "doc:newline-below",
     ["cmd+shift+return"] = "doc:newline-above",
     ["cmd+j"] = "doc:join-lines",

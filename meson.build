@@ -1,6 +1,6 @@
 project('masame',
     ['c'],
-    version : '0.5.1',
+    version : '0.5.2',
     license : 'MIT',
     meson_version : '>= 0.56',
     default_options : [
