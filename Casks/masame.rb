@@ -10,7 +10,7 @@ cask "masame" do
   desc "Lightweight text editor"
   homepage "https://github.com/moriyama-dev/masame"
 
-  depends_on macos: :big_sur
+  depends_on :macos
 
   app "Masame.app"
   binary "#{appdir}/Masame.app/Contents/MacOS/masame"
