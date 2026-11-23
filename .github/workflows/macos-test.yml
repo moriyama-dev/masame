@@ -51,3 +51,40 @@ jobs:
           grep -q 'OS%3A%20macOS' "${MASAME_TEST_REPORT}"
           grep -q 'Time%3A%20[0-9]' "${MASAME_TEST_REPORT}"
           grep -q '"https://github.com/moriyama-dev/masame"' "${MASAME_TEST_REPORT}"
+
+  cask:
+    # Installs the cask from this checkout with Homebrew, the way people get it.
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Update Homebrew
+        run: |
+          brew update
+          brew --version
+
+      - name: Check the syntax
+        run: ruby -c Casks/masame.rb
+
+      - name: Install with Homebrew
+        run: |
+          set -euo pipefail
+          brew tap moriyama-dev/masame "${GITHUB_WORKSPACE}"
+          brew install --cask moriyama-dev/masame/masame 2>&1 | tee "${RUNNER_TEMP}/brew-install.log"
+          if grep -F 'is deprecated' "${RUNNER_TEMP}/brew-install.log"; then
+            echo "Homebrew reports a deprecated cask syntax" >&2
+            exit 1
+          fi
+          test -d /Applications/Masame.app
+          if xattr -p com.apple.quarantine /Applications/Masame.app 2> /dev/null; then
+            echo "The quarantine flag is still set" >&2
+            exit 1
+          fi
+          brew list --cask --versions masame
+          brew uninstall --cask moriyama-dev/masame/masame
+
+      - name: Check the style
+        run: brew style Casks/masame.rb
